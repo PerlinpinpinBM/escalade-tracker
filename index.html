@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Escalade v5.0</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;min-height:100vh;padding:20px}
+.container{max-width:500px;margin:0 auto}
+.login{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-card{background:#1e293b;padding:40px;border-radius:16px;width:100%;max-width:400px;text-align:center}
+.login-card h1{font-size:2rem;margin-bottom:30px}
+.form-group{margin-bottom:20px;text-align:left}
+.form-group label{display:block;color:#94a3b8;margin-bottom:8px;font-size:0.9rem}
+.form-group input{width:100%;padding:12px;border:1px solid #475569;border-radius:8px;background:#0f172a;color:#fff;font-size:1rem}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:1rem;cursor:pointer;transition:all 0.3s}
+.btn-primary{background:#10b981;color:#fff}
+.btn-primary:active{background:#059669}
+.btn-secondary{background:#475569;color:#fff;margin-top:10px}
+.error{background:#7f1d1d;color:#fca5a5;padding:12px;border-radius:8px;margin-bottom:20px;font-size:0.9rem}
+.hidden{display:none!important}
+.header{text-align:center;margin-bottom:30px}
+.header h1{font-size:1.8rem;margin-bottom:5px}
+.header .version{color:#94a3b8;font-size:0.8rem}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:30px}
+.nav-btn{padding:20px;background:#1e293b;border:2px solid #334155;border-radius:12px;text-align:center;cursor:pointer;transition:all 0.3s}
+.nav-btn:active{background:#334155}
+.nav-btn .icon{font-size:2rem;margin-bottom:8px}
+.nav-btn .label{font-size:1rem}
+.card{background:#1e293b;padding:20px;border-radius:12px;margin-bottom:20px;border:1px solid #334155}
+.card h2{font-size:1.2rem;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px}
+.stat{background:#334155;padding:15px;border-radius:8px;text-align:center}
+.stat-label{color:#94a3b8;font-size:0.8rem;margin-bottom:5px}
+.stat-value{font-size:1.5rem;font-weight:bold;color:#10b981}
+.weather-card{background:#334155;padding:15px;border-radius:8px;margin-bottom:10px}
+.weather-card h3{font-size:1rem;margin-bottom:10px}
+.weather-days{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.weather-day{background:#1e293b;padding:10px;border-radius:6px;text-align:center}
+.weather-day .day-name{color:#94a3b8;font-size:0.8rem;margin-bottom:5px}
+.weather-day .icon{font-size:1.5rem;margin:5px 0}
+.weather-day .temp{font-size:0.9rem}
+.session-type{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}
+.type-card{background:#334155;padding:30px 20px;border-radius:12px;text-align:center;cursor:pointer;transition:all 0.3s}
+.type-card:active{background:#475569}
+.type-card .icon{font-size:3rem;margin-bottom:10px}
+.type-card .label{font-size:1.1rem}
+.voie-item{background:#334155;padding:15px;border-radius:8px;margin-bottom:10px}
+.voie-item h4{margin-bottom:8px;font-size:1rem}
+.voie-details{color:#94a3b8;font-size:0.85rem;margin-bottom:10px}
+.voie-actions{display:flex;gap:8px}
+.btn-small{padding:8px 12px;font-size:0.85rem;border:none;border-radius:6px;cursor:pointer}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-edit{background:#3b82f6;color:#fff}
+.btn-add{background:#10b981;color:#fff;width:100%;padding:12px;margin-top:10px}
+.back-btn{background:#475569;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;margin-bottom:20px}
+.input{width:100%;padding:10px;border:1px solid #475569;border-radius:6px;background:#0f172a;color:#fff;margin-bottom:10px;font-size:0.95rem}
+select.input{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:20px;padding-right:35px}
+.badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;margin-left:8px}
+.badge-projet{background:#fbbf24;color:#000}
+.badge-réussi{background:#10b981;color:#fff}
+.badge-abandon{background:#ef4444;color:#fff}
+</style>
+</head>
+<body>
+<div id="login-screen" class="login">
+<div class="login-card">
+<h1>🔒 Escalade Tracker</h1>
+<div id="login-error" class="error hidden"></div>
+<div class="form-group">
+<label>Utilisateur</label>
+<input type="text" id="username" placeholder="Utilisateur">
+</div>
+<div class="form-group">
+<label>Mot de passe</label>
+<input type="password" id="password" placeholder="Mot de passe">
+</div>
+<button class="btn btn-primary" onclick="login()">Connexion</button>
+</div>
+</div>
+<div id="app" class="hidden">
+<div class="container">
+<div class="header">
+<h1>⛰️ Escalade Tracker</h1>
+<div class="version">v5.0</div>
+</div>
+<div id="home-view">
+<div class="nav">
+<div class="nav-btn" onclick="showBoard()">
+<div class="icon">📊</div>
+<div class="label">Board</div>
+</div>
+<div class="nav-btn" onclick="showSessionChoice()">
+<div class="icon">➕</div>
+<div class="label">Session</div>
+</div>
+</div>
+</div>
+<div id="board-view" class="hidden">
+<button class="back-btn" onclick="showHome()">← Retour</button>
+<div class="card">
+<h2>📊 Bruno</h2>
+<div class="stat-grid">
+<div class="stat"><div class="stat-label">Max 2025</div><div class="stat-value" id="bruno-max">-</div></div>
+<div class="stat"><div class="stat-label">Sessions salle</div><div class="stat-value" id="bruno-salle">0</div></div>
+<div class="stat"><div class="stat-label">Sessions falaise</div><div class="stat-value" id="bruno-falaise">0</div></div>
+</div>
+</div>
+<div class="card">
+<h2>📊 Sophie</h2>
+<div class="stat-grid">
+<div class="stat"><div class="stat-label">Max 2025</div><div class="stat-value" id="sophie-max">-</div></div>
+<div class="stat"><div class="stat-label">Sessions salle</div><div class="stat-value" id="sophie-salle">0</div></div>
+<div class="stat"><div class="stat-label">Sessions falaise</div><div class="stat-value" id="sophie-falaise">0</div></div>
+</div>
+</div>
+<div class="card">
+<h2>🌤️ Météo Week-end</h2>
+<div id="weather-container"></div>
+</div>
+</div>
+<div id="session-choice-view" class="hidden">
+<button class="back-btn" onclick="showHome()">← Retour</button>
+<div class="session-type">
+<div class="type-card" onclick="createSession('salle')">
+<div class="icon">🏢</div>
+<div class="label">Salle</div>
+</div>
+<div class="type-card" onclick="createSession('falaise')">
+<div class="icon">⛰️</div>
+<div class="label">Falaise</div>
+</div>
+</div>
+</div>
+<div id="session-form-view" class="hidden">
+<button class="back-btn" onclick="showSessionChoice()">← Retour</button>
+<div class="card">
+<h2 id="session-title">Nouvelle Session</h2>
+<label>Qui</label>
+<select class="input" id="session-user">
+<option value="Bruno">Bruno</option>
+<option value="Sophie">Sophie</option>
+</select>
+<label>Nom</label>
+<input class="input" id="session-nom" placeholder="Nom du lieu">
+<label>Date</label>
+<input class="input" type="date" id="session-date">
+<button class="btn btn-primary" onclick="saveSessionInfo()">Continuer</button>
+</div>
+</div>
+<div id="session-voies-view" class="hidden">
+<button class="back-btn" onclick="finishSession()">✓ Terminer</button>
+<div class="card">
+<h2 id="session-info-title">Session</h2>
+<div id="voies-list"></div>
+<button class="btn-add" onclick="showVoieForm()">➕ Ajouter une voie</button>
+</div>
+</div>
+<div id="voie-form-view" class="hidden">
+<button class="back-btn" onclick="cancelVoieForm()">← Retour</button>
+<div class="card">
+<h2 id="voie-form-title">Nouvelle Voie</h2>
+<input type="hidden" id="voie-edit-id">
+<label>Nom de la voie</label>
+<input class="input" id="voie-nom" placeholder="Ex: La Directe">
+<label>Niveau</label>
+<select class="input" id="voie-niveau">
+<option>5a</option><option>5b</option><option>5c</option>
+<option selected>6a</option><option>6a+</option><option>6b</option><option>6b+</option>
+<option>6c</option><option>6c+</option><option>7a</option><option>7a+</option>
+<option>7b</option><option>7b+</option><option>7c</option><option>7c+</option><option>8a</option>
+</select>
+<label>Type</label>
+<select class="input" id="voie-type">
+<option value="copyrock">CopyRock</option>
+<option value="dalle">Dalle</option>
+<option value="devers">Devers</option>
+<option value="gros-devers">Gros Devers</option>
+<option value="petit-devers">Petit Devers</option>
+<option value="vertical">Vertical</option>
+</select>
+<label>Statut</label>
+<select class="input" id="voie-statut">
+<option value="projet">Projet</option>
+<option value="réussi">Réussi</option>
+<option value="abandon">Abandon</option>
+</select>
+<label>Nombre d'essais</label>
+<input class="input" type="number" id="voie-essais" value="1" min="1">
+<label>Notes</label>
+<input class="input" id="voie-notes" placeholder="Optionnel">
+<button class="btn btn-primary" onclick="saveVoie()">✓ Enregistrer</button>
+</div>
+</div>
+</div>
+</div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import{getDatabase,ref,set,push,onValue,remove}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const app=initializeApp({apiKey:"AIzaSyDILef-HO__QCnEJwQDNvCELmXXbF3kAfI",authDomain:"escalade-tracker.firebaseapp.com",databaseURL:"https://escalade-tracker-default-rtdb.europe-west1.firebasedatabase.app",projectId:"escalade-tracker",storageBucket:"escalade-tracker.firebasestorage.app",messagingSenderId:"355020489656",appId:"1:355020489656:web:515ba5f926045ff86f054d"});
+const db=getDatabase(app);
+window.sessions=[];
+window.currentSession=null;
+window.cotations=["5a","5b","5c","6a","6a+","6b","6b+","6c","6c+","7a","7a+","7b","7b+","7c","7c+","8a"];
+window.login=function(){
+const u=document.getElementById("username").value;
+const p=document.getElementById("password").value;
+if(u==="michel"&&p==="MichMich#2026"){
+localStorage.setItem("escalade-user","michel");
+document.getElementById("login-screen").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+loadData();
+}else{
+document.getElementById("login-error").textContent="Identifiants incorrects";
+document.getElementById("login-error").classList.remove("hidden");
+}
+};
+window.loadData=function(){
+onValue(ref(db,"sessions"),snapshot=>{
+const data=snapshot.val();
+window.sessions=data?Object.values(data).map(s=>({...s,voies:s.voies||[]})):[];
+updateBoard();
+});
+};
+window.showHome=function(){
+document.querySelectorAll("#app>div>div").forEach(v=>v.classList.add("hidden"));
+document.getElementById("home-view").classList.remove("hidden");
+};
+window.showBoard=function(){
+document.getElementById("home-view").classList.add("hidden");
+document.getElementById("board-view").classList.remove("hidden");
+updateBoard();
+loadWeather();
+};
+window.showSessionChoice=function(){
+document.getElementById("home-view").classList.add("hidden");
+document.getElementById("session-choice-view").classList.remove("hidden");
+};
+window.createSession=function(type){
+window.currentSession={type:type,voies:[],id:Date.now()};
+document.getElementById("session-title").textContent="Session "+(type==="salle"?"Salle 🏢":"Falaise ⛰️");
+document.getElementById("session-nom").value=type==="salle"?"Nautil":"";
+document.getElementById("session-date").value=new Date().toISOString().split("T")[0];
+document.getElementById("session-choice-view").classList.add("hidden");
+document.getElementById("session-form-view").classList.remove("hidden");
+};
+window.saveSessionInfo=function(){
+const user=document.getElementById("session-user").value;
+const nom=document.getElementById("session-nom").value;
+const date=document.getElementById("session-date").value;
+if(!nom||!date){alert("Remplis tous les champs");return;}
+window.currentSession.user=user;
+window.currentSession.nom=nom;
+window.currentSession.date=date;
+document.getElementById("session-info-title").textContent=nom+" - "+date;
+document.getElementById("session-form-view").classList.add("hidden");
+document.getElementById("session-voies-view").classList.remove("hidden");
+renderVoies();
+};
+window.showVoieForm=function(){
+document.getElementById("voie-form-title").textContent="Nouvelle Voie";
+document.getElementById("voie-edit-id").value="";
+document.getElementById("voie-nom").value="";
+document.getElementById("voie-niveau").value="6a";
+document.getElementById("voie-type").value="copyrock";
+document.getElementById("voie-statut").value="projet";
+document.getElementById("voie-essais").value="1";
+document.getElementById("voie-notes").value="";
+document.getElementById("session-voies-view").classList.add("hidden");
+document.getElementById("voie-form-view").classList.remove("hidden");
+};
+window.saveVoie=function(){
+const id=document.getElementById("voie-edit-id").value;
+const voie={
+nom:document.getElementById("voie-nom").value,
+niveau:document.getElementById("voie-niveau").value,
+type:document.getElementById("voie-type").value,
+statut:document.getElementById("voie-statut").value,
+essais:parseInt(document.getElementById("voie-essais").value),
+notes:document.getElementById("voie-notes").value
+};
+if(!voie.nom){alert("Nom requis");return;}
+if(id){
+const idx=window.currentSession.voies.findIndex(v=>v.id==id);
+window.currentSession.voies[idx]={...voie,id:id};
+}else{
+window.currentSession.voies.push({...voie,id:Date.now()});
+}
+cancelVoieForm();
+renderVoies();
+};
+window.editVoie=function(id){
+const voie=window.currentSession.voies.find(v=>v.id==id);
+document.getElementById("voie-form-title").textContent="Modifier Voie";
+document.getElementById("voie-edit-id").value=id;
+document.getElementById("voie-nom").value=voie.nom;
+document.getElementById("voie-niveau").value=voie.niveau;
+document.getElementById("voie-type").value=voie.type;
+document.getElementById("voie-statut").value=voie.statut;
+document.getElementById("voie-essais").value=voie.essais;
+document.getElementById("voie-notes").value=voie.notes;
+document.getElementById("session-voies-view").classList.add("hidden");
+document.getElementById("voie-form-view").classList.remove("hidden");
+};
+window.deleteVoie=function(id){
+if(confirm("Supprimer cette voie ?")){
+window.currentSession.voies=window.currentSession.voies.filter(v=>v.id!=id);
+renderVoies();
+}
+};
+window.cancelVoieForm=function(){
+document.getElementById("voie-form-view").classList.add("hidden");
+document.getElementById("session-voies-view").classList.remove("hidden");
+};
+window.finishSession=async function(){
+await set(ref(db,"sessions/"+window.currentSession.id),window.currentSession);
+window.currentSession=null;
+showHome();
+};
+window.renderVoies=function(){
+const list=document.getElementById("voies-list");
+if(window.currentSession.voies.length===0){
+list.innerHTML='<p style="color:#94a3b8;text-align:center;padding:20px">Aucune voie ajoutée</p>';
+return;
+}
+list.innerHTML=window.currentSession.voies.map(v=>`
+<div class="voie-item">
+<h4>${v.nom} <span class="badge badge-${v.statut}">${v.statut}</span></h4>
+<div class="voie-details">${v.niveau} • ${v.type} • ${v.essais} essai(s)${v.notes?" • "+v.notes:""}</div>
+<div class="voie-actions">
+<button class="btn-small btn-edit" onclick="editVoie(${v.id})">✏️ Modifier</button>
+<button class="btn-small btn-danger" onclick="deleteVoie(${v.id})">🗑 Supprimer</button>
+</div>
+</div>
+`).join("");
+};
+window.updateBoard=function(){
+const year=new Date().getFullYear();
+const brunoSessions=window.sessions.filter(s=>s.user==="Bruno"&&new Date(s.date).getFullYear()===year);
+const sophieSessions=window.sessions.filter(s=>s.user==="Sophie"&&new Date(s.date).getFullYear()===year);
+const brunoVoies=brunoSessions.flatMap(s=>s.voies.filter(v=>v.statut==="réussi"));
+const sophieVoies=sophieSessions.flatMap(s=>s.voies.filter(v=>v.statut==="réussi"));
+const brunoMax=brunoVoies.length>0?brunoVoies.map(v=>v.niveau).sort((a,b)=>window.cotations.indexOf(b)-window.cotations.indexOf(a))[0]:"-";
+const sophieMax=sophieVoies.length>0?sophieVoies.map(v=>v.niveau).sort((a,b)=>window.cotations.indexOf(b)-window.cotations.indexOf(a))[0]:"-";
+document.getElementById("bruno-max").textContent=brunoMax;
+document.getElementById("bruno-salle").textContent=brunoSessions.filter(s=>s.type==="salle").length;
+document.getElementById("bruno-falaise").textContent=brunoSessions.filter(s=>s.type==="falaise").length;
+document.getElementById("sophie-max").textContent=sophieMax;
+document.getElementById("sophie-salle").textContent=sophieSessions.filter(s=>s.type==="salle").length;
+document.getElementById("sophie-falaise").textContent=sophieSessions.filter(s=>s.type==="falaise").length;
+};
+window.loadWeather=async function(){
+const locations=[
+{name:"Saffres",lat:47.41,lon:4.83},
+{name:"Cormot",lat:47.13,lon:4.85},
+{name:"Annecy",lat:45.90,lon:6.13},
+{name:"Dolada",lat:46.43,lon:11.84}
+];
+const container=document.getElementById("weather-container");
+container.innerHTML="<p style='color:#94a3b8'>Chargement météo...</p>";
+try{
+const forecasts=await Promise.all(locations.map(loc=>
+fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lon}&appid=3c97f3998a6c30aa75a296934fc0d3f0&units=metric&lang=fr`)
+.then(r=>r.json())
+.then(data=>({name:loc.name,data:data}))
+));
+container.innerHTML=forecasts.map(f=>{
+const now=new Date();
+const day=now.getDay();
+let satData,sunData;
+if(day===0||day===6){
+satData=day===6?f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6)[0]:null;
+sunData=day===0?f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0)[0]:null;
+}else{
+const nextSat=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6);
+const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
+satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
+sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
+}
+if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
+const getIcon=code=>{
+if(code<300)return"⛈️";
+if(code<600)return"🌧️";
+if(code<700)return"🌨️";
+if(code<800)return"🌫️";
+if(code===800)return"☀️";
+return"☁️";
+};
+return`<div class="weather-card">
+<h3>${f.name}</h3>
+<div class="weather-days">
+<div class="weather-day">
+<div class="day-name">Samedi</div>
+<div class="icon">${getIcon(satData.weather[0].id)}</div>
+<div class="temp">${Math.round(satData.main.temp_min)}°/${Math.round(satData.main.temp_max)}°C</div>
+</div>
+<div class="weather-day">
+<div class="day-name">Dimanche</div>
+<div class="icon">${getIcon(sunData.weather[0].id)}</div>
+<div class="temp">${Math.round(sunData.main.temp_min)}°/${Math.round(sunData.main.temp_max)}°C</div>
+</div>
+</div>
+</div>`;
+}).join("");
+}catch(e){
+container.innerHTML="<p style='color:#ef4444'>Erreur météo (clé API en attente d'activation)</p>";
+}
+};
+if(localStorage.getItem("escalade-user")==="michel"){
+document.getElementById("login-screen").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+loadData();
+}
+</script>
+</body>
+</html>
