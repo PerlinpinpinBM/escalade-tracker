@@ -254,23 +254,13 @@ document.getElementById("sophie-falaise").textContent=sophieSessions.filter(s=>s
 }
 
 async function loadWeather(){
-const locations=[
-{name:"Saffres",lat:47.41,lon:4.83},
-{name:"Cormot",lat:47.13,lon:4.85},
-{name:"Annecy",lat:45.90,lon:6.13},
-{name:"Dolada",lat:46.43,lon:11.84}
-];
+const locations=[{name:"Saffres",lat:47.41,lon:4.83},{name:"Cormot",lat:47.13,lon:4.85},{name:"Annecy",lat:45.90,lon:6.13},{name:"Dolada",lat:46.43,lon:11.84}];
 const container=document.getElementById("weather-container");
-container.innerHTML="<p style='color:#94a3b8'>Chargement météo...</p>";
+container.innerHTML="<p style='color:#94a3b8'>Chargement...</p>";
 try{
-const forecasts=await Promise.all(locations.map(loc=>
-fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lon}&appid=3c97f3998a6c30aa75a296934fc0d3f0&units=metric&lang=fr`)
-.then(r=>r.json())
-.then(data=>({name:loc.name,data:data}))
-));
+const forecasts=await Promise.all(locations.map(loc=>fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lon}&appid=3c97f3998a6c30aa75a296934fc0d3f0&units=metric&lang=fr`).then(r=>r.json()).then(data=>({name:loc.name,data:data}))));
 container.innerHTML=forecasts.map(f=>{
-const now=new Date();
-const day=now.getDay();
+const now=new Date(),day=now.getDay();
 let satData,sunData;
 if(day===0||day===6){
 const today=f.data.list.filter(d=>new Date(d.dt*1000).toDateString()===now.toDateString())[0];
@@ -282,110 +272,33 @@ const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
 satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
 sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
 }
-if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
-const getIcon=code=>{
-if(code<300)return"⛈️";
-if(code<600)return"🌧️";
-if(code<700)return"🌨️";
-if(code<800)return"🌫️";
-if(code===800)return"☀️";
-return"☁️";
-};
-return`<div class="weather-card">
-<h3>${f.name}</h3>
-<div class="weather-days">
-<div class="weather-day">
-<div class="day-name">Samedi</div>
-<div class="icon">${getIcon(satData.weather[0].id)}</div>
-<div class="temp">${Math.round(satData.main.temp_min)}°/${Math.round(satData.main.temp_max)}°C</div>
-</div>
-<div class="weather-day">
-<div class="day-name">Dimanche</div>
-<div class="icon">${getIcon(sunData.weather[0].id)}</div>
-<div class="temp">${Math.round(sunData.main.temp_min)}°/${Math.round(sunData.main.temp_max)}°C</div>
-</div>
-</div>
-</div>`;
+if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Indisponible</p></div>`;
+const getIcon=code=>code<300?"⛈️":code<600?"🌧️":code<700?"🌨️":code<800?"🌫️":code===800?"☀️":"☁️";
+return`<div class="weather-card"><h3>${f.name}</h3><div class="weather-days"><div class="weather-day"><div class="day-name">Samedi</div><div class="icon">${getIcon(satData.weather[0].id)}</div><div class="temp">${Math.round(satData.main.temp_min)}°/${Math.round(satData.main.temp_max)}°C</div></div><div class="weather-day"><div class="day-name">Dimanche</div><div class="icon">${getIcon(sunData.weather[0].id)}</div><div class="temp">${Math.round(sunData.main.temp_min)}°/${Math.round(sunData.main.temp_max)}°C</div></div></div></div>`;
 }).join("");
 }catch(e){
-container.innerHTML="<p style='color:#ef4444'>Erreur météo (clé API en attente d'activation)</p>";
+container.innerHTML="<p style='color:#ef4444'>Erreur météo</p>";
 }
 }
 
 function renderHistory(){
 const list=document.getElementById("history-list");
 const filtered=sessions.filter(s=>s.type===currentType).sort((a,b)=>new Date(b.date)-new Date(a.date));
-if(filtered.length===0){
-list.innerHTML='<p style="color:#94a3b8;text-align:center">Aucun historique</p>';
-return;
-}
-list.innerHTML=filtered.map(s=>`
-<div class="history-item" data-session-id="${s.id}">
-<h4>${s.nom} - ${s.date}</h4>
-<div class="details">${s.user} • ${s.voies.length} voie(s)</div>
-</div>
-`).join("");
-document.querySelectorAll('.history-item').forEach(el=>{
-el.addEventListener('click',()=>{
-const session=sessions.find(s=>s.id==el.dataset.sessionId);
-currentSession={...session};
-isEditMode=true;
-document.getElementById("session-info-title").textContent=session.nom+" - "+session.date;
-showView("session-voies-view");
-renderVoies();
-});
-});
+if(filtered.length===0){list.innerHTML='<p style="color:#94a3b8;text-align:center">Aucun historique</p>';return;}
+list.innerHTML=filtered.map(s=>`<div class="history-item" data-session-id="${s.id}"><h4>${s.nom} - ${s.date}</h4><div class="details">${s.user} • ${s.voies.length} voie(s)</div></div>`).join("");
+document.querySelectorAll('.history-item').forEach(el=>{el.addEventListener('click',()=>{const session=sessions.find(s=>s.id==el.dataset.sessionId);currentSession={...session};isEditMode=true;document.getElementById("session-info-title").textContent=session.nom+" - "+session.date;showView("session-voies-view");renderVoies();});});
 }
 
 function renderVoies(){
 const list=document.getElementById("voies-list");
-if(currentSession.voies.length===0){
-list.innerHTML='<p style="color:#94a3b8;text-align:center;padding:20px">Aucune voie ajoutée</p>';
-return;
-}
+if(currentSession.voies.length===0){list.innerHTML='<p style="color:#94a3b8;text-align:center;padding:20px">Aucune voie</p>';return;}
 list.innerHTML=currentSession.voies.map((v,i)=>{
 const title=currentType==="salle"?`Voie ${i+1}`:v.nom;
 const stars="⭐".repeat(v.rating||0)+"☆".repeat(3-(v.rating||0));
-return`
-<div class="voie-item">
-<h4>${title} <span class="badge badge-${v.statut}">${v.statut}</span></h4>
-<div class="stars">${stars}</div>
-<div class="voie-details">${v.niveau} • ${v.type} • ${v.essais} essai(s)${v.notes?" • "+v.notes:""}</div>
-<div class="voie-actions">
-<button class="btn-small btn-edit" data-voie-id="${v.id}">✏️ Modifier</button>
-<button class="btn-small btn-danger" data-delete-voie="${v.id}">🗑 Supprimer</button>
-</div>
-</div>
-`;}).join("");
-document.querySelectorAll('[data-voie-id]').forEach(el=>{
-el.addEventListener('click',()=>{
-const voie=currentSession.voies.find(v=>v.id==el.dataset.voieId);
-document.getElementById("voie-form-title").textContent="Modifier Voie";
-document.getElementById("voie-edit-id").value=voie.id;
-if(currentType==="falaise"){
-document.getElementById("voie-nom-field").classList.remove("hidden");
-document.getElementById("voie-nom").value=voie.nom;
-}else{
-document.getElementById("voie-nom-field").classList.add("hidden");
-}
-document.getElementById("voie-niveau").value=voie.niveau;
-document.getElementById("voie-type").value=voie.type;
-document.getElementById("voie-statut").value=voie.statut;
-document.getElementById("voie-essais").value=voie.essais;
-document.getElementById("voie-rating").value=voie.rating||0;
-document.getElementById("voie-notes").value=voie.notes;
-updateStarDisplay(voie.rating||0);
-showView("voie-form-view");
-});
-});
-document.querySelectorAll('[data-delete-voie]').forEach(el=>{
-el.addEventListener('click',()=>{
-if(confirm("Supprimer cette voie ?")){
-currentSession.voies=currentSession.voies.filter(v=>v.id!=el.dataset.deleteVoie);
-renderVoies();
-}
-});
-});
+return`<div class="voie-item"><h4>${title} <span class="badge badge-${v.statut}">${v.statut}</span></h4><div class="stars">${stars}</div><div class="voie-details">${v.niveau} • ${v.type} • ${v.essais} essai(s)${v.notes?" • "+v.notes:""}</div><div class="voie-actions"><button class="btn-small btn-edit" data-voie-id="${v.id}">✏️</button><button class="btn-small btn-danger" data-delete-voie="${v.id}">🗑</button></div></div>`;
+}).join("");
+document.querySelectorAll('[data-voie-id]').forEach(el=>{el.addEventListener('click',()=>{const voie=currentSession.voies.find(v=>v.id==el.dataset.voieId);document.getElementById("voie-form-title").textContent="Modifier";document.getElementById("voie-edit-id").value=voie.id;if(currentType==="falaise"){document.getElementById("voie-nom-field").classList.remove("hidden");document.getElementById("voie-nom").value=voie.nom;}else{document.getElementById("voie-nom-field").classList.add("hidden");}document.getElementById("voie-niveau").value=voie.niveau;document.getElementById("voie-type").value=voie.type;document.getElementById("voie-statut").value=voie.statut;document.getElementById("voie-essais").value=voie.essais;document.getElementById("voie-rating").value=voie.rating||0;document.getElementById("voie-notes").value=voie.notes;updateStarDisplay(voie.rating||0);showView("voie-form-view");});});
+document.querySelectorAll('[data-delete-voie]').forEach(el=>{el.addEventListener('click',()=>{if(confirm("Supprimer ?")){currentSession.voies=currentSession.voies.filter(v=>v.id!=el.dataset.deleteVoie);renderVoies();}});});
 }
 
 function updateStarDisplay(rating){
@@ -395,14 +308,12 @@ for(let i=1;i<=3;i++){
 const star=document.createElement('span');
 star.className='star '+(i<=rating?'filled':'empty');
 star.textContent='⭐';
-star.addEventListener('click',()=>{
-document.getElementById("voie-rating").value=i;
-updateStarDisplay(i);
-});
+star.addEventListener('click',()=>{document.getElementById("voie-rating").value=i;updateStarDisplay(i);});
 container.appendChild(star);
 }
 }
 
+window.addEventListener('DOMContentLoaded',()=>{
 document.getElementById("login-btn").addEventListener('click',()=>{
 const u=document.getElementById("username").value;
 const p=document.getElementById("password").value;
@@ -417,134 +328,21 @@ document.getElementById("login-error").textContent="Identifiants incorrects";
 document.getElementById("login-error").classList.remove("hidden");
 }
 });
-
-document.getElementById("board-nav").addEventListener('click',()=>{
-showView("board-view");
-updateBoard();
-loadWeather();
+document.getElementById("board-nav").addEventListener('click',()=>{showView("board-view");updateBoard();loadWeather();});
+document.getElementById("session-nav").addEventListener('click',()=>showView("session-choice-view"));
+document.getElementById("board-back").addEventListener('click',()=>showView("home-view"));
+document.getElementById("choice-back").addEventListener('click',()=>showView("home-view"));
+document.getElementById("salle-btn").addEventListener('click',()=>{currentType="salle";isEditMode=false;document.getElementById("session-title").textContent="Nouvelle Session 🏢";document.getElementById("session-nom").value="Nautil";document.getElementById("session-date").value=new Date().toISOString().split("T")[0];showView("session-form-view");renderHistory();});
+document.getElementById("falaise-btn").addEventListener('click',()=>{currentType="falaise";isEditMode=false;document.getElementById("session-title").textContent="Nouvelle Session ⛰️";document.getElementById("session-nom").value="";document.getElementById("session-date").value=new Date().toISOString().split("T")[0];showView("session-form-view");renderHistory();});
+document.getElementById("form-back").addEventListener('click',()=>showView("session-choice-view"));
+document.getElementById("create-session-btn").addEventListener('click',()=>{const user=document.getElementById("session-user").value;const nom=document.getElementById("session-nom").value;const date=document.getElementById("session-date").value;if(!nom||!date){alert("Remplis tous");return;}currentSession={id:Date.now(),type:currentType,user:user,nom:nom,date:date,voies:[]};isEditMode=false;document.getElementById("session-info-title").textContent=nom+" - "+date;showView("session-voies-view");renderVoies();});
+document.getElementById("add-voie-btn").addEventListener('click',()=>{document.getElementById("voie-form-title").textContent="Nouvelle Voie";document.getElementById("voie-edit-id").value="";if(currentType==="salle"){document.getElementById("voie-nom-field").classList.add("hidden");}else{document.getElementById("voie-nom-field").classList.remove("hidden");document.getElementById("voie-nom").value="";}document.getElementById("voie-niveau").value="6a";document.getElementById("voie-type").value="copyrock";document.getElementById("voie-statut").value="projet";document.getElementById("voie-essais").value="1";document.getElementById("voie-rating").value="0";document.getElementById("voie-notes").value="";updateStarDisplay(0);showView("voie-form-view");});
+document.getElementById("voies-back").addEventListener('click',async()=>{await set(ref(db,"sessions/"+currentSession.id),currentSession);currentSession=null;showView("session-form-view");renderHistory();});
+document.getElementById("delete-session-btn").addEventListener('click',async()=>{if(confirm("Supprimer session ?")){await remove(ref(db,"sessions/"+currentSession.id));currentSession=null;showView("session-form-view");renderHistory();}});
+document.getElementById("voie-back").addEventListener('click',()=>showView("session-voies-view"));
+document.getElementById("save-voie-btn").addEventListener('click',()=>{const id=document.getElementById("voie-edit-id").value;const rating=parseInt(document.getElementById("voie-rating").value);if(rating===0){alert("Note obligatoire");return;}const voie={niveau:document.getElementById("voie-niveau").value,type:document.getElementById("voie-type").value,statut:document.getElementById("voie-statut").value,essais:parseInt(document.getElementById("voie-essais").value),rating:rating,notes:document.getElementById("voie-notes").value};if(currentType==="falaise"){voie.nom=document.getElementById("voie-nom").value;if(!voie.nom){alert("Nom requis");return;}}if(id){const idx=currentSession.voies.findIndex(v=>v.id==id);currentSession.voies[idx]={...voie,id:id};}else{currentSession.voies.push({...voie,id:Date.now()});}showView("session-voies-view");renderVoies();});
+if(localStorage.getItem("escalade-user")==="michel"){showView("app");document.getElementById("login-screen").classList.add("hidden");document.getElementById("home-view").classList.remove("hidden");loadData();}
 });
-
-document.getElementById("session-nav").addEventListener('click',()=>{
-showView("session-choice-view");
-});
-
-document.getElementById("board-back").addEventListener('click',()=>{
-showView("home-view");
-});
-
-document.getElementById("choice-back").addEventListener('click',()=>{
-showView("home-view");
-});
-
-document.getElementById("salle-btn").addEventListener('click',()=>{
-currentType="salle";
-isEditMode=false;
-document.getElementById("session-title").textContent="Nouvelle Session 🏢 Salle";
-document.getElementById("session-nom").value="Nautil";
-document.getElementById("session-date").value=new Date().toISOString().split("T")[0];
-showView("session-form-view");
-renderHistory();
-});
-
-document.getElementById("falaise-btn").addEventListener('click',()=>{
-currentType="falaise";
-isEditMode=false;
-document.getElementById("session-title").textContent="Nouvelle Session ⛰️ Falaise";
-document.getElementById("session-nom").value="";
-document.getElementById("session-date").value=new Date().toISOString().split("T")[0];
-showView("session-form-view");
-renderHistory();
-});
-
-document.getElementById("form-back").addEventListener('click',()=>{
-showView("session-choice-view");
-});
-
-document.getElementById("create-session-btn").addEventListener('click',()=>{
-const user=document.getElementById("session-user").value;
-const nom=document.getElementById("session-nom").value;
-const date=document.getElementById("session-date").value;
-if(!nom||!date){alert("Remplis tous les champs");return;}
-currentSession={id:Date.now(),type:currentType,user:user,nom:nom,date:date,voies:[]};
-isEditMode=false;
-document.getElementById("session-info-title").textContent=nom+" - "+date;
-showView("session-voies-view");
-renderVoies();
-});
-
-document.getElementById("add-voie-btn").addEventListener('click',()=>{
-document.getElementById("voie-form-title").textContent="Nouvelle Voie";
-document.getElementById("voie-edit-id").value="";
-if(currentType==="salle"){
-document.getElementById("voie-nom-field").classList.add("hidden");
-}else{
-document.getElementById("voie-nom-field").classList.remove("hidden");
-document.getElementById("voie-nom").value="";
-}
-document.getElementById("voie-niveau").value="6a";
-document.getElementById("voie-type").value="copyrock";
-document.getElementById("voie-statut").value="projet";
-document.getElementById("voie-essais").value="1";
-document.getElementById("voie-rating").value="0";
-document.getElementById("voie-notes").value="";
-updateStarDisplay(0);
-showView("voie-form-view");
-});
-
-document.getElementById("voies-back").addEventListener('click',async()=>{
-await set(ref(db,"sessions/"+currentSession.id),currentSession);
-currentSession=null;
-isEditMode=false;
-showView("session-form-view");
-renderHistory();
-});
-
-document.getElementById("delete-session-btn").addEventListener('click',async()=>{
-if(confirm("Supprimer cette session complète ?")){
-await remove(ref(db,"sessions/"+currentSession.id));
-currentSession=null;
-isEditMode=false;
-showView("session-form-view");
-renderHistory();
-}
-});
-
-document.getElementById("voie-back").addEventListener('click',()=>{
-showView("session-voies-view");
-});
-
-document.getElementById("save-voie-btn").addEventListener('click',()=>{
-const id=document.getElementById("voie-edit-id").value;
-const rating=parseInt(document.getElementById("voie-rating").value);
-if(rating===0){alert("La note est obligatoire (1 à 3 étoiles)");return;}
-const voie={
-niveau:document.getElementById("voie-niveau").value,
-type:document.getElementById("voie-type").value,
-statut:document.getElementById("voie-statut").value,
-essais:parseInt(document.getElementById("voie-essais").value),
-rating:rating,
-notes:document.getElementById("voie-notes").value
-};
-if(currentType==="falaise"){
-voie.nom=document.getElementById("voie-nom").value;
-if(!voie.nom){alert("Nom requis");return;}
-}
-if(id){
-const idx=currentSession.voies.findIndex(v=>v.id==id);
-currentSession.voies[idx]={...voie,id:id};
-}else{
-currentSession.voies.push({...voie,id:Date.now()});
-}
-showView("session-voies-view");
-renderVoies();
-});
-
-if(localStorage.getItem("escalade-user")==="michel"){
-showView("app");
-document.getElementById("login-screen").classList.add("hidden");
-document.getElementById("home-view").classList.remove("hidden");
-loadData();
-}
 </script>
 </body>
 </html>
