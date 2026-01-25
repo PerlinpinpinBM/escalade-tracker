@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Escalade v5.1.2</title>
+<title>Escalade v5.1.3</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;min-height:100vh;padding:20px}
@@ -93,7 +93,7 @@ select.input{-webkit-appearance:none;appearance:none;background-image:url("data:
 <div class="container">
 <div class="header">
 <h1>⛰️ Escalade Tracker</h1>
-<div class="version">v5.1.2</div>
+<div class="version">v5.1.3</div>
 </div>
 <div id="home-view">
 <div class="nav">
@@ -264,25 +264,26 @@ fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc
 ));
 const now=new Date();
 const day=now.getDay();
-console.log("Aujourd'hui:", now, "Jour de la semaine:", day, "(0=Dim, 6=Sam)");
 container.innerHTML=forecasts.map(f=>{
-console.log(f.name, "- Nombre de prévisions:", f.data.list.length);
 let satData,sunData;
-if(day===0||day===6){
-satData=day===6?f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6)[0]:null;
-sunData=day===0?f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0)[0]:null;
-console.log(f.name, "Weekend actuel - Sam:", satData?"OK":"NULL", "Dim:", sunData?"OK":"NULL");
+if(day===6){
+const futureSat=f.data.list.filter(d=>{
+const dt=new Date(d.dt*1000);
+return dt.getDay()===6&&dt>now&&(dt-now)>86400000;
+});
+satData=futureSat[Math.floor(futureSat.length/2)]||futureSat[0];
+const futureSun=f.data.list.filter(d=>{
+const dt=new Date(d.dt*1000);
+return dt.getDay()===0&&dt>now;
+});
+sunData=futureSun[Math.floor(futureSun.length/2)]||futureSun[0];
 }else{
 const nextSat=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6);
 const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
-console.log(f.name, "Prochains - Sam trouvés:", nextSat.length, "Dim trouvés:", nextSun.length);
 satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
 sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
 }
-if(!satData||!sunData){
-console.error(f.name, "MANQUE DE DONNÉES - Sam:", satData?"OK":"NULL", "Dim:", sunData?"OK":"NULL");
-return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
-}
+if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
 const getIcon=code=>{
 if(code<300)return"⛈️";
 if(code<600)return"🌧️";
