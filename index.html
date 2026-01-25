@@ -262,20 +262,27 @@ fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc
 .then(r=>r.json())
 .then(data=>({name:loc.name,data:data}))
 ));
-container.innerHTML=forecasts.map(f=>{
 const now=new Date();
 const day=now.getDay();
+console.log("Aujourd'hui:", now, "Jour de la semaine:", day, "(0=Dim, 6=Sam)");
+container.innerHTML=forecasts.map(f=>{
+console.log(f.name, "- Nombre de prévisions:", f.data.list.length);
 let satData,sunData;
 if(day===0||day===6){
 satData=day===6?f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6)[0]:null;
 sunData=day===0?f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0)[0]:null;
+console.log(f.name, "Weekend actuel - Sam:", satData?"OK":"NULL", "Dim:", sunData?"OK":"NULL");
 }else{
 const nextSat=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6);
 const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
+console.log(f.name, "Prochains - Sam trouvés:", nextSat.length, "Dim trouvés:", nextSun.length);
 satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
 sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
 }
-if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
+if(!satData||!sunData){
+console.error(f.name, "MANQUE DE DONNÉES - Sam:", satData?"OK":"NULL", "Dim:", sunData?"OK":"NULL");
+return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
+}
 const getIcon=code=>{
 if(code<300)return"⛈️";
 if(code<600)return"🌧️";
@@ -301,7 +308,8 @@ return`<div class="weather-card">
 </div>`;
 }).join("");
 }catch(e){
-container.innerHTML="<p style='color:#ef4444'>Erreur météo (clé API en attente d'activation)</p>";
+console.error("Erreur météo:", e);
+container.innerHTML="<p style='color:#ef4444'>Erreur météo</p>";
 }
 }
 
@@ -331,8 +339,18 @@ container.innerHTML='';
 for(let i=1;i<=3;i++){
 const star=document.createElement('span');
 star.className='star '+(i<=rating?'filled':'empty');
-star.textContent='⭐';
-star.addEventListener('click',()=>{document.getElementById("voie-rating").value=i;updateStarDisplay(i);});
+star.textContent=i<=rating?'⭐':'☆';
+star.addEventListener('click',()=>{
+const currentRating=parseInt(document.getElementById("voie-rating").value);
+let newRating;
+if(i===currentRating){
+newRating=i-1;
+}else{
+newRating=i;
+}
+document.getElementById("voie-rating").value=newRating;
+updateStarDisplay(newRating);
+});
 container.appendChild(star);
 }
 }
