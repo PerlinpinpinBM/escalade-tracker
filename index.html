@@ -253,78 +253,64 @@ document.getElementById("sophie-falaise").textContent=sophieSessions.filter(s=>s
 }
 
 async function loadWeather(){
-const locations=[{name:"Saffres",lat:47.41,lon:4.83},{name:"Cormot",lat:47.13,lon:4.85},{name:"Annecy",lat:45.90,lon:6.13},{name:"Dolada",lat:46.43,lon:11.84}];
+const locations=[
+{name:"Saffres",lat:47.41,lon:4.83},
+{name:"Cormot",lat:47.13,lon:4.85},
+{name:"Annecy",lat:45.90,lon:6.13},
+{name:"Dolada",lat:46.43,lon:11.84}
+];
 const container=document.getElementById("weather-container");
 container.innerHTML="<p style='color:#94a3b8'>Chargement météo...</p>";
 try{
 const forecasts=await Promise.all(locations.map(loc=>
-fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lon}&appid=3c97f3998a6c30aa75a296934fc0d3f0&units=metric&lang=fr`)
+fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`)
 .then(r=>r.json())
 .then(data=>({name:loc.name,data:data}))
 ));
 const now=new Date();
-const day=now.getDay();
-console.log("=== DEBUG MÉTÉO ===");
-console.log("Maintenant:", now);
-console.log("Jour:", day, "(0=Dim, 1=Lun, ..., 6=Sam)");
+const currentDay=now.getDay();
 container.innerHTML=forecasts.map(f=>{
-console.log("---", f.name, "---");
-console.log("Nombre de prévisions:", f.data.list.length);
-const allDates=f.data.list.map(d=>new Date(d.dt*1000));
-console.log("Première prévision:", allDates[0]);
-console.log("Dernière prévision:", allDates[allDates.length-1]);
-let satData,sunData;
-if(day===6){
-console.log("C'est samedi, on cherche le samedi PROCHAIN (pas aujourd'hui)");
-const futureSat=f.data.list.filter(d=>{
-const dt=new Date(d.dt*1000);
-const diffMs=dt-now;
-const diffDays=diffMs/86400000;
-return dt.getDay()===6&&diffDays>1;
-});
-console.log("Samedis trouvés dans le futur (>1 jour):", futureSat.length);
-satData=futureSat[Math.floor(futureSat.length/2)]||futureSat[0];
-const futureSun=f.data.list.filter(d=>{
-const dt=new Date(d.dt*1000);
-return dt.getDay()===0&&dt>now;
-});
-console.log("Dimanches trouvés dans le futur:", futureSun.length);
-sunData=futureSun[Math.floor(futureSun.length/2)]||futureSun[0];
-}else{
-console.log("Pas samedi, on cherche le prochain weekend");
-const nextSat=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6);
-const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
-console.log("Samedis trouvés:", nextSat.length);
-console.log("Dimanches trouvés:", nextSun.length);
-satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
-sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
+const daily=f.data.daily;
+const dates=daily.time.map(d=>new Date(d));
+let satIndex=-1,sunIndex=-1;
+for(let i=0;i<dates.length;i++){
+const d=dates[i];
+const dayOfWeek=d.getDay();
+if(dayOfWeek===6&&satIndex===-1&&(currentDay!==6||d>now)){
+satIndex=i;
 }
-console.log("Samedi sélectionné:", satData?new Date(satData.dt*1000):"NULL");
-console.log("Dimanche sélectionné:", sunData?new Date(sunData.dt*1000):"NULL");
-if(!satData||!sunData){
-console.error("ÉCHEC - Manque de données");
+if(dayOfWeek===0&&sunIndex===-1&&(currentDay===6||d>now)){
+sunIndex=i;
+}
+}
+if(satIndex===-1||sunIndex===-1){
 return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
 }
 const getIcon=code=>{
-if(code<300)return"⛈️";
-if(code<600)return"🌧️";
-if(code<700)return"🌨️";
-if(code<800)return"🌫️";
-if(code===800)return"☀️";
+if(code===0)return"☀️";
+if(code<=3)return"⛅";
+if(code<=49)return"🌫️";
+if(code<=67)return"🌧️";
+if(code<=77)return"🌨️";
+if(code<=82)return"🌧️";
+if(code<=86)return"🌨️";
+if(code<=99)return"⛈️";
 return"☁️";
 };
+const satTemp=`${Math.round(daily.temperature_2m_min[satIndex])}°/${Math.round(daily.temperature_2m_max[satIndex])}°C`;
+const sunTemp=`${Math.round(daily.temperature_2m_min[sunIndex])}°/${Math.round(daily.temperature_2m_max[sunIndex])}°C`;
 return`<div class="weather-card">
 <h3>${f.name}</h3>
 <div class="weather-days">
 <div class="weather-day">
 <div class="day-name">Samedi</div>
-<div class="icon">${getIcon(satData.weather[0].id)}</div>
-<div class="temp">${Math.round(satData.main.temp_min)}°/${Math.round(satData.main.temp_max)}°C</div>
+<div class="icon">${getIcon(daily.weathercode[satIndex])}</div>
+<div class="temp">${satTemp}</div>
 </div>
 <div class="weather-day">
 <div class="day-name">Dimanche</div>
-<div class="icon">${getIcon(sunData.weather[0].id)}</div>
-<div class="temp">${Math.round(sunData.main.temp_min)}°/${Math.round(sunData.main.temp_max)}°C</div>
+<div class="icon">${getIcon(daily.weathercode[sunIndex])}</div>
+<div class="temp">${sunTemp}</div>
 </div>
 </div>
 </div>`;
