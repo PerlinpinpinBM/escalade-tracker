@@ -61,8 +61,7 @@ select.input{-webkit-appearance:none;appearance:none;background-image:url("data:
 .badge-projet{background:#fbbf24;color:#000}
 .badge-réussi{background:#10b981;color:#fff}
 .badge-abandon{background:#ef4444;color:#fff}
-.stars{font-size:1.3rem;margin:8px 0;cursor:pointer;user-select:none}
-.star{display:inline-block;margin:0 2px;cursor:pointer}
+.stars{font-size:2.5rem;margin:15px 0;cursor:pointer;user-select:none;display:flex;gap:15px;justify-content:center}.star{display:inline-block;padding:10px;cursor:pointer;touch-action:manipulation}
 .star.filled{color:#fbbf24}
 .star.empty{color:#475569}
 .history-item{background:#334155;padding:12px;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.3s}
@@ -260,24 +259,34 @@ container.innerHTML="<p style='color:#94a3b8'>Chargement...</p>";
 try{
 const forecasts=await Promise.all(locations.map(loc=>fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc.lon}&appid=3c97f3998a6c30aa75a296934fc0d3f0&units=metric&lang=fr`).then(r=>r.json()).then(data=>({name:loc.name,data:data}))));
 container.innerHTML=forecasts.map(f=>{
-const now=new Date(),day=now.getDay();
+if(!f.data||!f.data.list)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Erreur API</p></div>`;
+const now=new Date();
+const day=now.getDay();
+const list=f.data.list;
 let satData,sunData;
-if(day===0||day===6){
-const today=f.data.list.filter(d=>new Date(d.dt*1000).toDateString()===now.toDateString())[0];
-satData=day===6?today:null;
-sunData=day===0?today:null;
+if(day===6){
+const todayData=list.filter(d=>{const dt=new Date(d.dt*1000);return dt.getDate()===now.getDate()&&dt.getHours()>=12&&dt.getHours()<=15});
+satData=todayData[0]||list[0];
+const sunData2=list.filter(d=>new Date(d.dt*1000).getDay()===0&&new Date(d.dt*1000).getHours()>=12&&new Date(d.dt*1000).getHours()<=15);
+sunData=sunData2[0]||list.filter(d=>new Date(d.dt*1000).getDay()===0)[0];
+}else if(day===0){
+const todayData=list.filter(d=>{const dt=new Date(d.dt*1000);return dt.getDate()===now.getDate()&&dt.getHours()>=12&&dt.getHours()<=15});
+sunData=todayData[0]||list[0];
+const nextSat=list.filter(d=>new Date(d.dt*1000)>now&&new Date(d.dt*1000).getDay()===6);
+satData=nextSat[nextSat.length>5?5:Math.floor(nextSat.length/2)]||nextSat[0];
 }else{
-const nextSat=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6);
-const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
-satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
-sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
+const nextSat=list.filter(d=>new Date(d.dt*1000).getDay()===6&&new Date(d.dt*1000).getHours()>=12&&new Date(d.dt*1000).getHours()<=15);
+const nextSun=list.filter(d=>new Date(d.dt*1000).getDay()===0&&new Date(d.dt*1000).getHours()>=12&&new Date(d.dt*1000).getHours()<=15);
+satData=nextSat[0]||list.filter(d=>new Date(d.dt*1000).getDay()===6)[0];
+sunData=nextSun[0]||list.filter(d=>new Date(d.dt*1000).getDay()===0)[0];
 }
-if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Indisponible</p></div>`;
+if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données incomplètes</p></div>`;
 const getIcon=code=>code<300?"⛈️":code<600?"🌧️":code<700?"🌨️":code<800?"🌫️":code===800?"☀️":"☁️";
 return`<div class="weather-card"><h3>${f.name}</h3><div class="weather-days"><div class="weather-day"><div class="day-name">Samedi</div><div class="icon">${getIcon(satData.weather[0].id)}</div><div class="temp">${Math.round(satData.main.temp_min)}°/${Math.round(satData.main.temp_max)}°C</div></div><div class="weather-day"><div class="day-name">Dimanche</div><div class="icon">${getIcon(sunData.weather[0].id)}</div><div class="temp">${Math.round(sunData.main.temp_min)}°/${Math.round(sunData.main.temp_max)}°C</div></div></div></div>`;
 }).join("");
 }catch(e){
-container.innerHTML="<p style='color:#ef4444'>Erreur météo</p>";
+console.error(e);
+container.innerHTML="<p style='color:#ef4444'>Erreur météo : "+e.message+"</p>";
 }
 }
 
