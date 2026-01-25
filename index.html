@@ -269,21 +269,52 @@ fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${lo
 ));
 const now=new Date();
 const currentDay=now.getDay();
+console.log("=== OPEN-METEO DEBUG ===");
+console.log("Maintenant:", now);
+console.log("Jour actuel:", currentDay, "(0=Dim, 6=Sam)");
 container.innerHTML=forecasts.map(f=>{
+console.log("--- " + f.name + " ---");
+console.log("Données reçues:", f.data);
+if(!f.data.daily){
+console.error("PAS DE DONNÉES DAILY !");
+return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#ef4444">Erreur API</p></div>`;
+}
 const daily=f.data.daily;
+console.log("Dates disponibles:", daily.time);
 const dates=daily.time.map(d=>new Date(d));
+console.log("Dates parsées:", dates);
+console.log("Jours de la semaine:", dates.map(d=>d.getDay()));
 let satIndex=-1,sunIndex=-1;
 for(let i=0;i<dates.length;i++){
 const d=dates[i];
 const dayOfWeek=d.getDay();
-if(dayOfWeek===6&&satIndex===-1&&(currentDay!==6||d>now)){
+console.log(`Index ${i}: ${d.toDateString()} - Jour: ${dayOfWeek}`);
+if(dayOfWeek===6&&satIndex===-1){
+if(currentDay===6){
+if(d>now){
+console.log(`-> SAMEDI TROUVÉ (après aujourd'hui) index=${i}`);
+satIndex=i;
+}else{
+console.log(`-> Samedi ignoré (pas après aujourd'hui)`);
+}
+}else{
+console.log(`-> SAMEDI TROUVÉ index=${i}`);
 satIndex=i;
 }
-if(dayOfWeek===0&&sunIndex===-1&&(currentDay===6||d>now)){
+}
+if(dayOfWeek===0&&sunIndex===-1){
+if(currentDay===6||d>now){
+console.log(`-> DIMANCHE TROUVÉ index=${i}`);
 sunIndex=i;
+}else{
+console.log(`-> Dimanche ignoré`);
 }
 }
+}
+console.log("Samedi index:", satIndex);
+console.log("Dimanche index:", sunIndex);
 if(satIndex===-1||sunIndex===-1){
+console.error("ÉCHEC - satIndex=" + satIndex + " sunIndex=" + sunIndex);
 return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
 }
 const getIcon=code=>{
@@ -299,6 +330,7 @@ return"☁️";
 };
 const satTemp=`${Math.round(daily.temperature_2m_min[satIndex])}°/${Math.round(daily.temperature_2m_max[satIndex])}°C`;
 const sunTemp=`${Math.round(daily.temperature_2m_min[sunIndex])}°/${Math.round(daily.temperature_2m_max[sunIndex])}°C`;
+console.log("✅ SUCCÈS - Affichage météo");
 return`<div class="weather-card">
 <h3>${f.name}</h3>
 <div class="weather-days">
@@ -317,7 +349,7 @@ return`<div class="weather-card">
 }).join("");
 }catch(e){
 console.error("Erreur météo:", e);
-container.innerHTML="<p style='color:#ef4444'>Erreur météo</p>";
+container.innerHTML="<p style='color:#ef4444'>Erreur météo: " + e.message + "</p>";
 }
 }
 
