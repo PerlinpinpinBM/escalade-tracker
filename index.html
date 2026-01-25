@@ -264,26 +264,47 @@ fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${loc.lat}&lon=${loc
 ));
 const now=new Date();
 const day=now.getDay();
+console.log("=== DEBUG MÉTÉO ===");
+console.log("Maintenant:", now);
+console.log("Jour:", day, "(0=Dim, 1=Lun, ..., 6=Sam)");
 container.innerHTML=forecasts.map(f=>{
+console.log("---", f.name, "---");
+console.log("Nombre de prévisions:", f.data.list.length);
+const allDates=f.data.list.map(d=>new Date(d.dt*1000));
+console.log("Première prévision:", allDates[0]);
+console.log("Dernière prévision:", allDates[allDates.length-1]);
 let satData,sunData;
 if(day===6){
+console.log("C'est samedi, on cherche le samedi PROCHAIN (pas aujourd'hui)");
 const futureSat=f.data.list.filter(d=>{
 const dt=new Date(d.dt*1000);
-return dt.getDay()===6&&dt>now&&(dt-now)>86400000;
+const diffMs=dt-now;
+const diffDays=diffMs/86400000;
+return dt.getDay()===6&&diffDays>1;
 });
+console.log("Samedis trouvés dans le futur (>1 jour):", futureSat.length);
 satData=futureSat[Math.floor(futureSat.length/2)]||futureSat[0];
 const futureSun=f.data.list.filter(d=>{
 const dt=new Date(d.dt*1000);
 return dt.getDay()===0&&dt>now;
 });
+console.log("Dimanches trouvés dans le futur:", futureSun.length);
 sunData=futureSun[Math.floor(futureSun.length/2)]||futureSun[0];
 }else{
+console.log("Pas samedi, on cherche le prochain weekend");
 const nextSat=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===6);
 const nextSun=f.data.list.filter(d=>new Date(d.dt*1000).getDay()===0);
+console.log("Samedis trouvés:", nextSat.length);
+console.log("Dimanches trouvés:", nextSun.length);
 satData=nextSat[Math.floor(nextSat.length/2)]||nextSat[0];
 sunData=nextSun[Math.floor(nextSun.length/2)]||nextSun[0];
 }
-if(!satData||!sunData)return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
+console.log("Samedi sélectionné:", satData?new Date(satData.dt*1000):"NULL");
+console.log("Dimanche sélectionné:", sunData?new Date(sunData.dt*1000):"NULL");
+if(!satData||!sunData){
+console.error("ÉCHEC - Manque de données");
+return`<div class="weather-card"><h3>${f.name}</h3><p style="color:#94a3b8">Données indisponibles</p></div>`;
+}
 const getIcon=code=>{
 if(code<300)return"⛈️";
 if(code<600)return"🌧️";
