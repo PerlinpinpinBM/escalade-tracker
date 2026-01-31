@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Escalade v6.0.0</title>
+<title>Escalade v6.1.0</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;min-height:100vh;padding:20px}
@@ -28,9 +28,10 @@ body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#1e2
 .card{background:#1e293b;padding:20px;border-radius:12px;margin-bottom:20px;border:1px solid #334155}
 .card h2{font-size:1.2rem;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px}
+.stat-grid-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:15px}
 .stat{background:#334155;padding:15px;border-radius:8px;text-align:center;cursor:pointer;transition:all 0.3s}
 .stat:active{background:#475569}
-.stat-label{color:#94a3b8;font-size:0.8rem;margin-bottom:5px}
+.stat-label{color:#94a3b8;font-size:0.75rem;margin-bottom:5px;line-height:1.2}
 .stat-value{font-size:1.5rem;font-weight:bold;color:#10b981}
 .weather-card{background:#334155;padding:15px;border-radius:8px;margin-bottom:10px}
 .weather-card h3{font-size:1rem;margin-bottom:10px}
@@ -39,7 +40,7 @@ body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#1e2
 .weather-day .day-name{color:#94a3b8;font-size:0.8rem;margin-bottom:5px}
 .weather-day .icon{font-size:1.5rem;margin:5px 0}
 .weather-day .temp{font-size:0.9rem}
-.session-type{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}
+.session-type{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:20px}
 .type-card{background:#334155;padding:30px 20px;border-radius:12px;text-align:center;cursor:pointer;transition:all 0.3s}
 .type-card:active{background:#475569}
 .type-card .icon{font-size:3rem;margin-bottom:10px}
@@ -72,6 +73,8 @@ select.input{-webkit-appearance:none;appearance:none;background-image:url("data:
 .delete-session-btn{background:#ef4444;color:#fff;width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;cursor:pointer}
 .user-info{text-align:center;color:#94a3b8;font-size:0.9rem;margin-bottom:20px}
 .logout-btn{background:#475569;color:#fff;padding:8px 16px;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;margin-top:10px}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;color:#94a3b8;margin-bottom:5px;font-size:0.9rem}
 </style>
 </head>
 <body>
@@ -89,7 +92,7 @@ Se connecter avec Google
 <div class="container">
 <div class="header">
 <h1>⛰️ Escalade Tracker</h1>
-<div class="version">v6.0.0</div>
+<div class="version">v6.1.0</div>
 <div class="user-info" id="user-info"></div>
 </div>
 <div id="home-view">
@@ -107,22 +110,7 @@ Se connecter avec Google
 </div>
 <div id="board-view" class="hidden">
 <button class="back-btn" id="board-back">← Retour</button>
-<div class="card">
-<h2>📊 Bruno</h2>
-<div class="stat-grid">
-<div class="stat"><div class="stat-label">Max 30j</div><div class="stat-value" id="bruno-max">-</div></div>
-<div class="stat" id="bruno-salle-stat"><div class="stat-label">Sessions salle</div><div class="stat-value" id="bruno-salle">0</div></div>
-<div class="stat" id="bruno-falaise-stat"><div class="stat-label">Sessions falaise</div><div class="stat-value" id="bruno-falaise">0</div></div>
-</div>
-</div>
-<div class="card">
-<h2>📊 Sophie</h2>
-<div class="stat-grid">
-<div class="stat"><div class="stat-label">Max 30j</div><div class="stat-value" id="sophie-max">-</div></div>
-<div class="stat" id="sophie-salle-stat"><div class="stat-label">Sessions salle</div><div class="stat-value" id="sophie-salle">0</div></div>
-<div class="stat" id="sophie-falaise-stat"><div class="stat-label">Sessions falaise</div><div class="stat-value" id="sophie-falaise">0</div></div>
-</div>
-</div>
+<div id="board-cards-container"></div>
 <div class="card">
 <h2>🌤️ Météo Week-end</h2>
 <div id="weather-container"></div>
@@ -136,8 +124,12 @@ Se connecter avec Google
 <div class="label">Salle</div>
 </div>
 <div class="type-card" id="falaise-btn">
-<div class="icon">⛰️</div>
+<div class="icon">🧗</div>
 <div class="label">Falaise</div>
+</div>
+<div class="type-card" id="viaferrata-btn">
+<div class="icon">🔗</div>
+<div class="label">Via Ferrata</div>
 </div>
 </div>
 </div>
@@ -147,9 +139,14 @@ Se connecter avec Google
 <h2 id="session-title">Nouvelle Session</h2>
 <label>Qui</label>
 <select class="input" id="session-user">
+<option value="Sophie&Bruno">Sophie&Bruno</option>
 <option value="Bruno">Bruno</option>
 <option value="Sophie">Sophie</option>
 </select>
+<div id="lieu-field" class="form-group hidden">
+<label>Lieu</label>
+<input class="input" id="session-lieu" placeholder="Ex: Annecy">
+</div>
 <label>Nom</label>
 <input class="input" id="session-nom" placeholder="Nom du lieu">
 <label>Date</label>
@@ -166,7 +163,7 @@ Se connecter avec Google
 <div class="card">
 <h2 id="session-info-title">Session</h2>
 <div id="voies-list"></div>
-<button class="btn-add" id="add-voie-btn">➕ Ajouter une voie</button>
+<button class="btn-add" id="add-voie-btn">➕ Ajouter <span id="add-voie-label">une voie</span></button>
 <button class="delete-session-btn" id="delete-session-btn">🗑 Supprimer la session</button>
 </div>
 </div>
@@ -179,6 +176,15 @@ Se connecter avec Google
 <label>Nom de la voie</label>
 <input class="input" id="voie-nom" placeholder="Ex: La Directe">
 </div>
+<div id="via-lieu-field" class="hidden">
+<label>Lieu</label>
+<input class="input" id="via-lieu" placeholder="Ex: Annecy">
+</div>
+<div id="via-nom-field" class="hidden">
+<label>Nom de la via</label>
+<input class="input" id="via-nom" placeholder="Ex: Roc des Boeufs">
+</div>
+<div id="voie-niveau-field">
 <label>Niveau</label>
 <select class="input" id="voie-niveau">
 <option>5a</option><option>5b</option><option>5c</option>
@@ -186,6 +192,31 @@ Se connecter avec Google
 <option>6c</option><option>6c+</option><option>7a</option><option>7a+</option>
 <option>7b</option><option>7b+</option><option>7c</option><option>7c+</option><option>8a</option>
 </select>
+</div>
+<div id="via-difficulte-field" class="hidden">
+<label>Difficulté</label>
+<select class="input" id="via-difficulte">
+<option value="F">F (Facile)</option>
+<option value="PD" selected>PD (Peu Difficile)</option>
+<option value="AD">AD (Assez Difficile)</option>
+<option value="D">D (Difficile)</option>
+<option value="TD">TD (Très Difficile)</option>
+<option value="ED">ED (Extrêmement Difficile)</option>
+</select>
+</div>
+<div id="via-approche-field" class="hidden">
+<label>Approche</label>
+<input class="input" id="via-approche" placeholder="Ex: 30 minutes, 1h20">
+</div>
+<div id="via-duree-field" class="hidden">
+<label>Durée</label>
+<input class="input" id="via-duree" placeholder="Ex: 2h30">
+</div>
+<div id="via-denivele-field" class="hidden">
+<label>Dénivelé (m)</label>
+<input class="input" type="number" id="via-denivele" placeholder="Ex: 300">
+</div>
+<div id="voie-type-field">
 <label>Type</label>
 <select class="input" id="voie-type">
 <option value="copyrock">CopyRock</option>
@@ -195,14 +226,19 @@ Se connecter avec Google
 <option value="petit-devers">Petit Devers</option>
 <option value="vertical">Vertical</option>
 </select>
+</div>
+<div id="voie-statut-field">
 <label>Statut</label>
 <select class="input" id="voie-statut">
 <option value="projet">Projet</option>
 <option value="réussi">Réussi</option>
 <option value="abandon">Abandon</option>
 </select>
+</div>
+<div id="voie-essais-field">
 <label>Nombre d'essais</label>
 <input class="input" type="number" id="voie-essais" value="1" min="1">
+</div>
 <label>Note (obligatoire)</label>
 <div class="stars" id="star-rating"></div>
 <input type="hidden" id="voie-rating" value="0">
@@ -242,8 +278,8 @@ let currentSession = null;
 let currentType = "";
 let isEditMode = false;
 let currentUser = null;
+let loggedUserEmail = "";
 
-// Falaises
 const FALAISES = [
   { name: "Saffres", lat: 47.3667, lon: 5.0167 },
   { name: "Cormot", lat: 47.0833, lon: 4.8333 },
@@ -277,10 +313,10 @@ document.getElementById("google-signin-btn").addEventListener("click", async () 
   }
 });
 
-// Auth state observer
 onAuthStateChanged(auth, (user) => {
   if (user && ALLOWED_EMAILS.includes(user.email)) {
     currentUser = user;
+    loggedUserEmail = user.email;
     document.getElementById("login-screen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     document.getElementById("user-info").textContent = `Connecté: ${user.email}`;
@@ -291,13 +327,11 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// Logout
 document.getElementById("logout-btn").addEventListener("click", async () => {
   await signOut(auth);
   showView("home-view");
 });
 
-// Load data from Firebase
 function loadData() {
   const sessionsRef = ref(db, "sessions");
   onValue(sessionsRef, (snapshot) => {
@@ -309,12 +343,12 @@ function loadData() {
   });
 }
 
-// Calcul du niveau max des 30 derniers jours
 function getMaxLevel30Days(user) {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   
   const recentSessions = sessions.filter(s => {
+    if (s.type === "viaferrata") return false;
     const sessionDate = new Date(s.date);
     return s.user === user && sessionDate >= thirtyDaysAgo && sessionDate <= now;
   });
@@ -338,25 +372,67 @@ function getMaxLevel30Days(user) {
 }
 
 function updateBoard() {
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const container = document.getElementById("board-cards-container");
   
-  // Bruno
-  document.getElementById("bruno-max").textContent = getMaxLevel30Days("Bruno");
-  const brunoSalle = sessions.filter(s => s.user === "Bruno" && s.type === "salle").length;
-  const brunoFalaise = sessions.filter(s => s.user === "Bruno" && s.type === "falaise").length;
-  document.getElementById("bruno-salle").textContent = brunoSalle;
-  document.getElementById("bruno-falaise").textContent = brunoFalaise;
+  // Déterminer l'ordre basé sur l'utilisateur connecté
+  const users = loggedUserEmail === "bruno.manuel94@gmail.com" 
+    ? ["Bruno", "Sophie"] 
+    : ["Sophie", "Bruno"];
   
-  // Sophie
-  document.getElementById("sophie-max").textContent = getMaxLevel30Days("Sophie");
-  const sophieSalle = sessions.filter(s => s.user === "Sophie" && s.type === "salle").length;
-  const sophieFalaise = sessions.filter(s => s.user === "Sophie" && s.type === "falaise").length;
-  document.getElementById("sophie-salle").textContent = sophieSalle;
-  document.getElementById("sophie-falaise").textContent = sophieFalaise;
+  let html = "";
+  
+  users.forEach(user => {
+    const maxLevel = getMaxLevel30Days(user);
+    const salleSessions = sessions.filter(s => s.user === user && s.type === "salle").length;
+    const falaiseSessions = sessions.filter(s => s.user === user && s.type === "falaise").length;
+    const viaFerratas = sessions.filter(s => s.user.includes(user) && s.type === "viaferrata").length;
+    
+    html += `<div class="card">
+      <h2>📊 ${user}</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-label">Niveau Max<br>30 jours</div><div class="stat-value">${maxLevel}</div></div>
+        <div class="stat" data-user="${user}" data-type="salle"><div class="stat-label">Sessions<br>salle</div><div class="stat-value">${salleSessions}</div></div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat" data-user="${user}" data-type="falaise"><div class="stat-label">Sessions<br>falaise</div><div class="stat-value">${falaiseSessions}</div></div>
+        <div class="stat" data-user="${user}" data-type="viaferrata"><div class="stat-label">Via<br>Ferrata</div><div class="stat-value">${viaFerratas}</div></div>
+      </div>
+    </div>`;
+  });
+  
+  container.innerHTML = html;
+  
+  // Ajouter les event listeners pour les stats cliquables
+  document.querySelectorAll('.stat[data-type]').forEach(stat => {
+    stat.addEventListener('click', () => {
+      const type = stat.dataset.type;
+      currentType = type;
+      isEditMode = false;
+      
+      if (type === "salle") {
+        document.getElementById("session-title").textContent = "Nouvelle Session 🏢";
+        document.getElementById("session-nom").value = "Nautil";
+        document.getElementById("session-user").value = "Bruno";
+        document.getElementById("lieu-field").classList.add("hidden");
+      } else if (type === "falaise") {
+        document.getElementById("session-title").textContent = "Nouvelle Session 🧗";
+        document.getElementById("session-nom").value = "";
+        document.getElementById("session-user").value = "Bruno";
+        document.getElementById("lieu-field").classList.add("hidden");
+      } else if (type === "viaferrata") {
+        document.getElementById("session-title").textContent = "Nouvelle Via Ferrata 🔗";
+        document.getElementById("session-user").value = "Sophie&Bruno";
+        document.getElementById("session-nom").value = "";
+        document.getElementById("lieu-field").classList.remove("hidden");
+      }
+      
+      document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
+      showView("session-form-view");
+      renderHistory();
+    });
+  });
 }
 
-// Météo OpenWeather
 async function loadWeather() {
   const container = document.getElementById("weather-container");
   container.innerHTML = "<p style='color:#94a3b8'>Chargement météo...</p>";
@@ -367,9 +443,8 @@ async function loadWeather() {
       const response = await fetch(url);
       const data = await response.json();
       
-      // Trouver samedi et dimanche prochain
       const now = new Date();
-      const currentDay = now.getDay(); // 0=dimanche, 6=samedi
+      const currentDay = now.getDay();
       
       let daysUntilSaturday = (6 - currentDay + 7) % 7;
       if (daysUntilSaturday === 0 && now.getHours() >= 12) daysUntilSaturday = 7;
@@ -381,7 +456,6 @@ async function loadWeather() {
       const nextSunday = new Date(nextSaturday);
       nextSunday.setDate(nextSaturday.getDate() + 1);
       
-      // Trouver les prévisions les plus proches de samedi 12h et dimanche 12h
       let satForecast = null;
       let sunForecast = null;
       let minSatDiff = Infinity;
@@ -450,19 +524,33 @@ function renderHistory() {
     return;
   }
   
-  list.innerHTML = filtered.map(s => 
-    `<div class="history-item" data-session-id="${s.id}">
-      <h4>${s.nom} - ${s.date}</h4>
-      <div class="details">${s.user} • ${s.voies.length} voie(s)</div>
-    </div>`
-  ).join("");
+  list.innerHTML = filtered.map(s => {
+    let displayText = "";
+    if (s.type === "viaferrata") {
+      displayText = `${s.lieu} - ${s.nom} - ${s.date}`;
+    } else {
+      displayText = `${s.nom} - ${s.date}`;
+    }
+    const itemCount = s.type === "viaferrata" ? "1 via" : `${s.voies.length} voie(s)`;
+    
+    return `<div class="history-item" data-session-id="${s.id}">
+      <h4>${displayText}</h4>
+      <div class="details">${s.user} • ${itemCount}</div>
+    </div>`;
+  }).join("");
   
   document.querySelectorAll('.history-item').forEach(el => {
     el.addEventListener('click', () => {
       const session = sessions.find(s => s.id == el.dataset.sessionId);
       currentSession = { ...session };
       isEditMode = true;
-      document.getElementById("session-info-title").textContent = session.nom + " - " + session.date;
+      
+      if (session.type === "viaferrata") {
+        document.getElementById("session-info-title").textContent = session.lieu + " - " + session.nom + " - " + session.date;
+      } else {
+        document.getElementById("session-info-title").textContent = session.nom + " - " + session.date;
+      }
+      
       showView("session-voies-view");
       renderVoies();
     });
@@ -471,6 +559,13 @@ function renderHistory() {
 
 function renderVoies() {
   const list = document.getElementById("voies-list");
+  const addLabel = document.getElementById("add-voie-label");
+  
+  if (currentType === "viaferrata") {
+    addLabel.textContent = "une via";
+  } else {
+    addLabel.textContent = "une voie";
+  }
   
   if (currentSession.voies.length === 0) {
     list.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px">Aucune voie</p>';
@@ -478,13 +573,26 @@ function renderVoies() {
   }
   
   list.innerHTML = currentSession.voies.map((v, i) => {
-    const title = currentType === "salle" ? `Voie ${i + 1}` : v.nom;
-    const stars = "⭐".repeat(v.rating || 0) + "☆".repeat(3 - (v.rating || 0));
+    let title, details, stars;
+    
+    if (currentType === "viaferrata") {
+      title = "Via Ferrata";
+      const maxStars = 5;
+      stars = "⭐".repeat(v.rating || 0) + "☆".repeat(maxStars - (v.rating || 0));
+      details = `${v.difficulte} • Approche: ${v.approche} • Durée: ${v.duree} • ${v.denivele}m${v.notes ? " • " + v.notes : ""}`;
+    } else {
+      title = currentType === "salle" ? `Voie ${i + 1}` : v.nom;
+      const maxStars = 3;
+      stars = "⭐".repeat(v.rating || 0) + "☆".repeat(maxStars - (v.rating || 0));
+      details = `${v.niveau} • ${v.type} • ${v.essais} essai(s)${v.notes ? " • " + v.notes : ""}`;
+    }
+    
+    const badge = currentType === "viaferrata" ? "" : `<span class="badge badge-${v.statut}">${v.statut}</span>`;
     
     return `<div class="voie-item">
-      <h4>${title} <span class="badge badge-${v.statut}">${v.statut}</span></h4>
+      <h4>${title} ${badge}</h4>
       <div class="stars">${stars}</div>
-      <div class="voie-details">${v.niveau} • ${v.type} • ${v.essais} essai(s)${v.notes ? " • " + v.notes : ""}</div>
+      <div class="voie-details">${details}</div>
       <div class="voie-actions">
         <button class="btn-small btn-edit" data-voie-id="${v.id}">✏️</button>
         <button class="btn-small btn-danger" data-delete-voie="${v.id}">🗑</button>
@@ -492,35 +600,73 @@ function renderVoies() {
     </div>`;
   }).join("");
   
-  // Edit voie
   document.querySelectorAll('[data-voie-id]').forEach(el => {
     el.addEventListener('click', () => {
       const voie = currentSession.voies.find(v => v.id == el.dataset.voieId);
       document.getElementById("voie-form-title").textContent = "Modifier";
       document.getElementById("voie-edit-id").value = voie.id;
       
-      if (currentType === "falaise") {
-        document.getElementById("voie-nom-field").classList.remove("hidden");
-        document.getElementById("voie-nom").value = voie.nom;
-      } else {
+      if (currentType === "viaferrata") {
+        // Via Ferrata
+        document.getElementById("via-lieu-field").classList.remove("hidden");
+        document.getElementById("via-nom-field").classList.remove("hidden");
+        document.getElementById("via-difficulte-field").classList.remove("hidden");
+        document.getElementById("via-approche-field").classList.remove("hidden");
+        document.getElementById("via-duree-field").classList.remove("hidden");
+        document.getElementById("via-denivele-field").classList.remove("hidden");
+        
         document.getElementById("voie-nom-field").classList.add("hidden");
+        document.getElementById("voie-niveau-field").classList.add("hidden");
+        document.getElementById("voie-type-field").classList.add("hidden");
+        document.getElementById("voie-statut-field").classList.add("hidden");
+        document.getElementById("voie-essais-field").classList.add("hidden");
+        
+        document.getElementById("via-lieu").value = voie.lieu;
+        document.getElementById("via-nom").value = voie.nom;
+        document.getElementById("via-difficulte").value = voie.difficulte;
+        document.getElementById("via-approche").value = voie.approche;
+        document.getElementById("via-duree").value = voie.duree;
+        document.getElementById("via-denivele").value = voie.denivele;
+        
+        updateStarDisplay(voie.rating || 0, 5);
+      } else {
+        // Salle ou Falaise
+        document.getElementById("via-lieu-field").classList.add("hidden");
+        document.getElementById("via-nom-field").classList.add("hidden");
+        document.getElementById("via-difficulte-field").classList.add("hidden");
+        document.getElementById("via-approche-field").classList.add("hidden");
+        document.getElementById("via-duree-field").classList.add("hidden");
+        document.getElementById("via-denivele-field").classList.add("hidden");
+        
+        document.getElementById("voie-niveau-field").classList.remove("hidden");
+        document.getElementById("voie-type-field").classList.remove("hidden");
+        document.getElementById("voie-statut-field").classList.remove("hidden");
+        document.getElementById("voie-essais-field").classList.remove("hidden");
+        
+        if (currentType === "falaise") {
+          document.getElementById("voie-nom-field").classList.remove("hidden");
+          document.getElementById("voie-nom").value = voie.nom;
+        } else {
+          document.getElementById("voie-nom-field").classList.add("hidden");
+        }
+        
+        document.getElementById("voie-niveau").value = voie.niveau;
+        document.getElementById("voie-type").value = voie.type;
+        document.getElementById("voie-statut").value = voie.statut;
+        document.getElementById("voie-essais").value = voie.essais;
+        
+        updateStarDisplay(voie.rating || 0, 3);
       }
       
-      document.getElementById("voie-niveau").value = voie.niveau;
-      document.getElementById("voie-type").value = voie.type;
-      document.getElementById("voie-statut").value = voie.statut;
-      document.getElementById("voie-essais").value = voie.essais;
       document.getElementById("voie-rating").value = voie.rating || 0;
       document.getElementById("voie-notes").value = voie.notes;
-      updateStarDisplay(voie.rating || 0);
       showView("voie-form-view");
     });
   });
   
-  // Delete voie
   document.querySelectorAll('[data-delete-voie]').forEach(el => {
     el.addEventListener('click', () => {
-      if (confirm("Supprimer cette voie ?")) {
+      if (confirm("Supprimer ?")) {
         currentSession.voies = currentSession.voies.filter(v => v.id != el.dataset.deleteVoie);
         renderVoies();
       }
@@ -528,11 +674,11 @@ function renderVoies() {
   });
 }
 
-function updateStarDisplay(rating) {
+function updateStarDisplay(rating, maxStars = 3) {
   const container = document.getElementById("star-rating");
   container.innerHTML = '';
   
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= maxStars; i++) {
     const star = document.createElement('span');
     star.className = 'star ' + (i <= rating ? 'filled' : 'empty');
     star.textContent = i <= rating ? '⭐' : '☆';
@@ -540,7 +686,7 @@ function updateStarDisplay(rating) {
       const currentRating = parseInt(document.getElementById("voie-rating").value);
       const newRating = (i === currentRating) ? i - 1 : i;
       document.getElementById("voie-rating").value = newRating;
-      updateStarDisplay(newRating);
+      updateStarDisplay(newRating, maxStars);
     });
     container.appendChild(star);
   }
@@ -565,55 +711,15 @@ document.getElementById("choice-back").addEventListener('click', () => {
   showView("home-view");
 });
 
-// Stats cliquables - Salle
-document.getElementById("bruno-salle-stat").addEventListener('click', () => {
-  currentType = "salle";
-  isEditMode = false;
-  document.getElementById("session-title").textContent = "Nouvelle Session 🏢";
-  document.getElementById("session-nom").value = "Nautil";
-  document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
-  showView("session-form-view");
-  renderHistory();
-});
-
-document.getElementById("sophie-salle-stat").addEventListener('click', () => {
-  currentType = "salle";
-  isEditMode = false;
-  document.getElementById("session-title").textContent = "Nouvelle Session 🏢";
-  document.getElementById("session-nom").value = "Nautil";
-  document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
-  showView("session-form-view");
-  renderHistory();
-});
-
-// Stats cliquables - Falaise
-document.getElementById("bruno-falaise-stat").addEventListener('click', () => {
-  currentType = "falaise";
-  isEditMode = false;
-  document.getElementById("session-title").textContent = "Nouvelle Session ⛰️";
-  document.getElementById("session-nom").value = "";
-  document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
-  showView("session-form-view");
-  renderHistory();
-});
-
-document.getElementById("sophie-falaise-stat").addEventListener('click', () => {
-  currentType = "falaise";
-  isEditMode = false;
-  document.getElementById("session-title").textContent = "Nouvelle Session ⛰️";
-  document.getElementById("session-nom").value = "";
-  document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
-  showView("session-form-view");
-  renderHistory();
-});
-
 // Session type choice
 document.getElementById("salle-btn").addEventListener('click', () => {
   currentType = "salle";
   isEditMode = false;
   document.getElementById("session-title").textContent = "Nouvelle Session 🏢";
+  document.getElementById("session-user").value = "Bruno";
   document.getElementById("session-nom").value = "Nautil";
   document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("lieu-field").classList.add("hidden");
   showView("session-form-view");
   renderHistory();
 });
@@ -621,9 +727,23 @@ document.getElementById("salle-btn").addEventListener('click', () => {
 document.getElementById("falaise-btn").addEventListener('click', () => {
   currentType = "falaise";
   isEditMode = false;
-  document.getElementById("session-title").textContent = "Nouvelle Session ⛰️";
+  document.getElementById("session-title").textContent = "Nouvelle Session 🧗";
+  document.getElementById("session-user").value = "Bruno";
   document.getElementById("session-nom").value = "";
   document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("lieu-field").classList.add("hidden");
+  showView("session-form-view");
+  renderHistory();
+});
+
+document.getElementById("viaferrata-btn").addEventListener('click', () => {
+  currentType = "viaferrata";
+  isEditMode = false;
+  document.getElementById("session-title").textContent = "Nouvelle Via Ferrata 🔗";
+  document.getElementById("session-user").value = "Sophie&Bruno";
+  document.getElementById("session-nom").value = "";
+  document.getElementById("session-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("lieu-field").classList.remove("hidden");
   showView("session-form-view");
   renderHistory();
 });
@@ -652,31 +772,82 @@ document.getElementById("create-session-btn").addEventListener('click', () => {
     voies: []
   };
   
+  if (currentType === "viaferrata") {
+    const lieu = document.getElementById("session-lieu").value;
+    if (!lieu) {
+      alert("Le lieu est obligatoire pour les via ferratas");
+      return;
+    }
+    currentSession.lieu = lieu;
+    document.getElementById("session-info-title").textContent = lieu + " - " + nom + " - " + date;
+  } else {
+    document.getElementById("session-info-title").textContent = nom + " - " + date;
+  }
+  
   isEditMode = false;
-  document.getElementById("session-info-title").textContent = nom + " - " + date;
   showView("session-voies-view");
   renderVoies();
 });
 
 // Add voie
 document.getElementById("add-voie-btn").addEventListener('click', () => {
-  document.getElementById("voie-form-title").textContent = "Nouvelle Voie";
+  document.getElementById("voie-form-title").textContent = currentType === "viaferrata" ? "Nouvelle Via" : "Nouvelle Voie";
   document.getElementById("voie-edit-id").value = "";
   
-  if (currentType === "salle") {
+  if (currentType === "viaferrata") {
+    // Via Ferrata
+    document.getElementById("via-lieu-field").classList.remove("hidden");
+    document.getElementById("via-nom-field").classList.remove("hidden");
+    document.getElementById("via-difficulte-field").classList.remove("hidden");
+    document.getElementById("via-approche-field").classList.remove("hidden");
+    document.getElementById("via-duree-field").classList.remove("hidden");
+    document.getElementById("via-denivele-field").classList.remove("hidden");
+    
     document.getElementById("voie-nom-field").classList.add("hidden");
+    document.getElementById("voie-niveau-field").classList.add("hidden");
+    document.getElementById("voie-type-field").classList.add("hidden");
+    document.getElementById("voie-statut-field").classList.add("hidden");
+    document.getElementById("voie-essais-field").classList.add("hidden");
+    
+    document.getElementById("via-lieu").value = "";
+    document.getElementById("via-nom").value = "";
+    document.getElementById("via-difficulte").value = "PD";
+    document.getElementById("via-approche").value = "";
+    document.getElementById("via-duree").value = "";
+    document.getElementById("via-denivele").value = "";
+    
+    updateStarDisplay(0, 5);
   } else {
-    document.getElementById("voie-nom-field").classList.remove("hidden");
-    document.getElementById("voie-nom").value = "";
+    // Salle ou Falaise
+    document.getElementById("via-lieu-field").classList.add("hidden");
+    document.getElementById("via-nom-field").classList.add("hidden");
+    document.getElementById("via-difficulte-field").classList.add("hidden");
+    document.getElementById("via-approche-field").classList.add("hidden");
+    document.getElementById("via-duree-field").classList.add("hidden");
+    document.getElementById("via-denivele-field").classList.add("hidden");
+    
+    document.getElementById("voie-niveau-field").classList.remove("hidden");
+    document.getElementById("voie-type-field").classList.remove("hidden");
+    document.getElementById("voie-statut-field").classList.remove("hidden");
+    document.getElementById("voie-essais-field").classList.remove("hidden");
+    
+    if (currentType === "salle") {
+      document.getElementById("voie-nom-field").classList.add("hidden");
+    } else {
+      document.getElementById("voie-nom-field").classList.remove("hidden");
+      document.getElementById("voie-nom").value = "";
+    }
+    
+    document.getElementById("voie-niveau").value = "6a";
+    document.getElementById("voie-type").value = "copyrock";
+    document.getElementById("voie-statut").value = "projet";
+    document.getElementById("voie-essais").value = "1";
+    
+    updateStarDisplay(0, 3);
   }
   
-  document.getElementById("voie-niveau").value = "6a";
-  document.getElementById("voie-type").value = "copyrock";
-  document.getElementById("voie-statut").value = "projet";
-  document.getElementById("voie-essais").value = "1";
   document.getElementById("voie-rating").value = "0";
   document.getElementById("voie-notes").value = "";
-  updateStarDisplay(0);
   showView("voie-form-view");
 });
 
@@ -706,26 +877,42 @@ document.getElementById("voie-back").addEventListener('click', () => {
 document.getElementById("save-voie-btn").addEventListener('click', () => {
   const id = document.getElementById("voie-edit-id").value;
   const rating = parseInt(document.getElementById("voie-rating").value);
+  const maxStars = currentType === "viaferrata" ? 5 : 3;
   
   if (rating === 0) {
-    alert("Note obligatoire (1-3 étoiles)");
+    alert(`Note obligatoire (1-${maxStars} étoiles)`);
     return;
   }
   
-  const voie = {
-    niveau: document.getElementById("voie-niveau").value,
-    type: document.getElementById("voie-type").value,
-    statut: document.getElementById("voie-statut").value,
-    essais: parseInt(document.getElementById("voie-essais").value),
+  let voie = {
     rating: rating,
     notes: document.getElementById("voie-notes").value
   };
   
-  if (currentType === "falaise") {
-    voie.nom = document.getElementById("voie-nom").value;
-    if (!voie.nom) {
-      alert("Nom de voie requis pour les falaises");
+  if (currentType === "viaferrata") {
+    voie.lieu = document.getElementById("via-lieu").value;
+    voie.nom = document.getElementById("via-nom").value;
+    voie.difficulte = document.getElementById("via-difficulte").value;
+    voie.approche = document.getElementById("via-approche").value;
+    voie.duree = document.getElementById("via-duree").value;
+    voie.denivele = parseInt(document.getElementById("via-denivele").value) || 0;
+    
+    if (!voie.lieu || !voie.nom || !voie.approche || !voie.duree) {
+      alert("Tous les champs sont requis pour les via ferratas");
       return;
+    }
+  } else {
+    voie.niveau = document.getElementById("voie-niveau").value;
+    voie.type = document.getElementById("voie-type").value;
+    voie.statut = document.getElementById("voie-statut").value;
+    voie.essais = parseInt(document.getElementById("voie-essais").value);
+    
+    if (currentType === "falaise") {
+      voie.nom = document.getElementById("voie-nom").value;
+      if (!voie.nom) {
+        alert("Nom de voie requis pour les falaises");
+        return;
+      }
     }
   }
   
