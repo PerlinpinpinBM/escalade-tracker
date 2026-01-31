@@ -383,9 +383,10 @@ function updateBoard() {
   
   users.forEach(user => {
     const maxLevel = getMaxLevel30Days(user);
-    const salleSessions = sessions.filter(s => s.user === user && s.type === "salle").length;
-    const falaiseSessions = sessions.filter(s => s.user === user && s.type === "falaise").length;
-    const viaFerratas = sessions.filter(s => s.user.includes(user) && s.type === "viaferrata").length;
+    const salleSessions = sessions.filter(s => s.user && s.user === user && s.type === "salle").length;
+    const falaiseSessions = sessions.filter(s => s.user && s.user === user && s.type === "falaise").length;
+    // Pour via ferrata, on compte celles qui contiennent le nom de l'user dans le champ user
+    const viaFerratas = sessions.filter(s => s.user && s.type === "viaferrata" && s.user.includes(user)).length;
     
     html += `<div class="card">
       <h2>📊 ${user}</h2>
