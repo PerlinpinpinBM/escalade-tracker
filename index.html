@@ -699,13 +699,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getDatabase, ref, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBJLS0bTP-Nu66MNloYD5e2GBVPL4NP3Yk",
-  authDomain: "escalade-tracker-c04f9.firebaseapp.com",
-  databaseURL: "https://escalade-tracker-c04f9-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "escalade-tracker-c04f9",
-  storageBucket: "escalade-tracker-c04f9.firebasestorage.app",
-  messagingSenderId: "526066526226",
-  appId: "1:526066526226:web:7d4c3feb6f8dc06ca9ea91"
+  apiKey: "AIzaSyDILef-HO__QCnEJwQDNvCELmXXbF3kAfI",
+  authDomain: "escalade-tracker.firebaseapp.com",
+  databaseURL: "https://escalade-tracker-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "escalade-tracker",
+  storageBucket: "escalade-tracker.firebasestorage.app",
+  messagingSenderId: "355020489656",
+  appId: "1:355020489656:web:515ba5f926045ff86f054d"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -721,9 +721,14 @@ let lieuxData = {};
 document.getElementById("google-signin-btn").addEventListener('click', async () => {
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    const result = await signInWithPopup(auth, provider);
+    console.log("Login successful:", result.user.email);
   } catch (error) {
-    document.getElementById("login-error").textContent = "Erreur de connexion";
+    console.error("Login error:", error);
+    document.getElementById("login-error").textContent = "Erreur: " + (error.message || error.code);
     document.getElementById("login-error").classList.remove("hidden");
   }
 });
