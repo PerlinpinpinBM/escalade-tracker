@@ -1885,9 +1885,22 @@ function updateStats() {
   document.getElementById("stat-projets-salle").textContent = totalProjetsSalle;
   
   // Stats Falaise (le code existant reste)
-  const lieux = Object.values(lieuxData);
-  // ... reste du code existant
-}
+const lieux = Object.values(lieuxData);
+  let totalVoies = 0;
+  let totalEnchaines = 0;
+  let totalProjets = 0;
+  
+  lieux.forEach(lieu => {
+    if (lieu.voies) {
+      const voies = Object.values(lieu.voies);
+      totalVoies += voies.length;
+      voies.forEach(voie => {
+        const statut = getVoieStatut(voie);
+        if (statut.class === 'enchainee') totalEnchaines++;
+        if (statut.class === 'projet') totalProjets++;
+      });
+    }
+  });
   
   document.getElementById("stat-lieux").textContent = lieux.length;
   document.getElementById("stat-voies").textContent = totalVoies;
