@@ -914,6 +914,7 @@ textarea.input{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDILef-HO__QCnEJwQDNvCELmXXbF3kAfI",
@@ -944,8 +945,7 @@ document.getElementById("google-signin-btn").addEventListener('click', async () 
     provider.setCustomParameters({
       prompt: 'select_account'
     });
-    const result = await signInWithPopup(auth, provider);
-    console.log("Login successful:", result.user.email);
+    await signInWithRedirect(auth, provider);
   } catch (error) {
     console.error("Login error:", error);
     document.getElementById("login-error").textContent = "Erreur: " + (error.message || error.code);
