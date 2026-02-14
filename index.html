@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Escalade">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Escalade v7.0.0</title>
+<title>Escalade v7.1.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -313,7 +313,7 @@ textarea.input{
 }
 
 /* Liste items */
-.lieu-item, .voie-item, .tentative-item{
+.salle-item, .lieu-item, .voie-item, .tentative-item{
   background:var(--bg-tertiary);
   padding:18px;
   border-radius:12px;
@@ -323,19 +323,19 @@ textarea.input{
   border:1px solid transparent;
   animation:fadeInUp 0.4s ease backwards;
 }
-.lieu-item:hover, .voie-item:hover, .tentative-item:hover{
+.salle-item:hover, .lieu-item:hover, .voie-item:hover, .tentative-item:hover{
   border-color:var(--accent-primary);
   transform:translateX(4px);
 }
-.lieu-item:active, .voie-item:active, .tentative-item:active{
+.salle-item:active, .lieu-item:active, .voie-item:active, .tentative-item:active{
   transform:scale(0.98);
 }
-.lieu-item h3, .voie-item h4, .tentative-item h4{
+.salle-item h3, .lieu-item h3, .voie-item h4, .tentative-item h4{
   font-size:1.1rem;
   margin-bottom:8px;
   font-weight:600;
 }
-.lieu-stats, .voie-details, .tentative-details{
+.salle-stats, .lieu-stats, .voie-details, .tentative-details{
   color:var(--text-secondary);
   font-size:0.85rem;
   margin-bottom:10px;
@@ -367,6 +367,7 @@ textarea.input{
 .badge-avue{background:#00d9ff;color:var(--bg-primary)}
 .badge-travail{background:var(--accent-warning);color:var(--bg-primary)}
 .badge-echec{background:var(--accent-danger);color:#fff}
+.badge-demontee{background:#475569;color:var(--text-secondary)}
 
 /* Stars */
 .stars{
@@ -470,50 +471,266 @@ textarea.input{
     <!-- HEADER -->
     <div class="header">
       <h1>⛰️ Escalade Tracker</h1>
-      <div class="version">v7.0.0</div>
+      <div class="version">v7.1.0</div>
       <div class="user-info" id="user-info"></div>
     </div>
 
-    <!-- HOME VIEW -->
-    <div id="home-view">
-      <div class="nav">
-        <div class="nav-btn" id="board-nav">
-          <div class="icon">📊</div>
-          <div class="label">Board</div>
-        </div>
-        <div class="nav-btn" id="falaise-nav">
-          <div class="icon">🧗</div>
-          <div class="label">Falaise</div>
-        </div>
-      </div>
-      <button class="logout-btn" id="logout-btn">Déconnexion</button>
+<!-- HOME VIEW -->
+<div id="home-view">
+  <div class="nav">
+    <div class="nav-btn" id="board-nav">
+      <div class="icon">📊</div>
+      <div class="label">Board</div>
     </div>
+    <div class="nav-btn" id="salle-nav">
+      <div class="icon">🏢</div>
+      <div class="label">Salle</div>
+    </div>
+    <div class="nav-btn" id="falaise-nav">
+      <div class="icon">🧗</div>
+      <div class="label">Falaise</div>
+    </div>
+  </div>
+  <button class="logout-btn" id="logout-btn">Déconnexion</button>
+</div>
 
-    <!-- BOARD VIEW -->
-    <div id="board-view" class="hidden">
-      <button class="back-btn" id="board-back">← Retour</button>
-      <div class="card">
-        <h2>📊 Statistiques Falaise</h2>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-label">Lieux visités</div>
-            <div class="stat-value" id="stat-lieux">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Total voies</div>
-            <div class="stat-value" id="stat-voies">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Voies enchaînées</div>
-            <div class="stat-value" id="stat-enchaines">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Projets en cours</div>
-            <div class="stat-value" id="stat-projets">0</div>
-          </div>
-        </div>
+ <!-- BOARD VIEW -->
+<div id="board-view" class="hidden">
+  <button class="back-btn" id="board-back">← Retour</button>
+  
+  <div class="card">
+    <h2>🏢 Statistiques Salle</h2>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">Salles visitées</div>
+        <div class="stat-value" id="stat-salles">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total voies</div>
+        <div class="stat-value" id="stat-voies-salle">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Enchaînées</div>
+        <div class="stat-value" id="stat-enchaines-salle">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Projets</div>
+        <div class="stat-value" id="stat-projets-salle">0</div>
       </div>
     </div>
+  </div>
+
+  <div class="card">
+    <h2>🧗 Statistiques Falaise</h2>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">Lieux visités</div>
+        <div class="stat-value" id="stat-lieux">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total voies</div>
+        <div class="stat-value" id="stat-voies">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Enchaînées</div>
+        <div class="stat-value" id="stat-enchaines">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Projets</div>
+        <div class="stat-value" id="stat-projets">0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- ==================== SALLE SECTION ==================== -->
+
+<!-- SALLE: LISTE DES SALLES -->
+<div id="salles-view" class="hidden">
+  <button class="back-btn" id="salles-back">← Retour</button>
+  <div class="card">
+    <h2>🏢 Mes Salles d'Escalade</h2>
+    <div id="salles-list"></div>
+    <button class="btn btn-add btn-success" id="add-salle-btn">➕ Ajouter une salle</button>
+  </div>
+</div>
+
+<!-- SALLE: FORMULAIRE SALLE -->
+<div id="salle-form-view" class="hidden">
+  <button class="back-btn" id="salle-form-back">← Retour</button>
+  <div class="card">
+    <h2 id="salle-form-title">Nouvelle Salle</h2>
+    <input type="hidden" id="salle-edit-id">
+    <div class="form-group">
+      <label>Nom de la salle</label>
+      <input class="input" id="salle-nom" placeholder="Ex: Le Nautile, Climb Up...">
+    </div>
+    <div class="form-group">
+      <label>Ville</label>
+      <input class="input" id="salle-ville" placeholder="Ex: Paris, Lyon...">
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea class="input" id="salle-notes" placeholder="Horaires, accès, particularités..."></textarea>
+    </div>
+    <button class="btn btn-add btn-success" id="save-salle-btn">💾 Enregistrer</button>
+    <button class="btn delete-btn hidden" id="delete-salle-btn">🗑 Supprimer cette salle</button>
+  </div>
+</div>
+
+<!-- SALLE: LISTE DES VOIES -->
+<div id="voies-salle-view" class="hidden">
+  <button class="back-btn" id="voies-salle-back">← Retour aux salles</button>
+  <div class="card">
+    <h2 id="voies-salle-title">Voies</h2>
+    <div id="voies-salle-list"></div>
+    <button class="btn btn-add btn-success" id="add-voie-salle-btn">➕ Ajouter une voie</button>
+  </div>
+</div>
+
+<!-- SALLE: FORMULAIRE VOIE -->
+<div id="voie-salle-form-view" class="hidden">
+  <button class="back-btn" id="voie-salle-form-back">← Retour</button>
+  <div class="card">
+    <h2 id="voie-salle-form-title">Nouvelle Voie</h2>
+    <input type="hidden" id="voie-salle-edit-id">
+    <div class="form-group">
+      <label>Couleur</label>
+      <select class="input" id="voie-salle-couleur">
+        <option value="Rouge">🔴 Rouge</option>
+        <option value="Bleu">🔵 Bleu</option>
+        <option value="Vert">🟢 Vert</option>
+        <option value="Jaune">🟡 Jaune</option>
+        <option value="Orange">🟠 Orange</option>
+        <option value="Violet">🟣 Violet</option>
+        <option value="Noir">⚫ Noir</option>
+        <option value="Blanc">⚪ Blanc</option>
+        <option value="Rose">🌸 Rose</option>
+        <option value="Gris">⚪ Gris</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Cotation</label>
+      <select class="input" id="voie-salle-cotation">
+        <option value="3">3</option>
+        <option value="4a">4a</option>
+        <option value="4b">4b</option>
+        <option value="4c">4c</option>
+        <option value="5a">5a</option>
+        <option value="5b">5b</option>
+        <option value="5c">5c</option>
+        <option value="6a" selected>6a</option>
+        <option value="6a+">6a+</option>
+        <option value="6b">6b</option>
+        <option value="6b+">6b+</option>
+        <option value="6c">6c</option>
+        <option value="6c+">6c+</option>
+        <option value="7a">7a</option>
+        <option value="7a+">7a+</option>
+        <option value="7b">7b</option>
+        <option value="7b+">7b+</option>
+        <option value="7c">7c</option>
+        <option value="7c+">7c+</option>
+        <option value="8a">8a</option>
+        <option value="8a+">8a+</option>
+        <option value="8b">8b</option>
+        <option value="8b+">8b+</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Type de voie</label>
+      <select class="input" id="voie-salle-type">
+        <option value="dalle">Dalle</option>
+        <option value="vertical">Vertical</option>
+        <option value="devers">Dévers</option>
+        <option value="toit">Toit</option>
+        <option value="mixte">Mixte</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Date d'ouverture (optionnel)</label>
+      <input class="input" type="date" id="voie-salle-date-ouverture">
+    </div>
+    <div class="form-group">
+      <label>Description / Notes</label>
+      <textarea class="input" id="voie-salle-description" placeholder="Mouvements, style, particularités..."></textarea>
+    </div>
+    <button class="btn btn-add btn-success" id="save-voie-salle-btn">💾 Enregistrer</button>
+    <button class="btn btn-add btn-secondary hidden" id="demonter-voie-salle-btn">🔨 Marquer comme démontée</button>
+    <button class="btn delete-btn hidden" id="delete-voie-salle-btn">🗑 Supprimer cette voie</button>
+  </div>
+</div>
+
+<!-- SALLE: DÉTAIL VOIE + TENTATIVES -->
+<div id="voie-salle-detail-view" class="hidden">
+  <button class="back-btn" id="voie-salle-detail-back">← Retour aux voies</button>
+  <div class="card">
+    <h2 id="voie-salle-detail-title">Voie</h2>
+    <div id="voie-salle-detail-info"></div>
+    <button class="btn btn-add btn-primary" id="add-tentative-salle-btn">➕ Ajouter une tentative</button>
+  </div>
+  <div class="card">
+    <h2>📅 Historique des tentatives</h2>
+    <div id="tentatives-salle-list"></div>
+  </div>
+</div>
+
+<!-- SALLE: FORMULAIRE TENTATIVE -->
+<div id="tentative-salle-form-view" class="hidden">
+  <button class="back-btn" id="tentative-salle-form-back">← Retour</button>
+  <div class="card">
+    <h2 id="tentative-salle-form-title">Nouvelle Tentative</h2>
+    <input type="hidden" id="tentative-salle-edit-id">
+    <div class="form-group">
+      <label>Date</label>
+      <input class="input" type="date" id="tentative-salle-date">
+    </div>
+    <div class="form-group">
+      <label>Qui</label>
+      <select class="input" id="tentative-salle-user">
+        <option value="Sophie&Bruno">Sophie&Bruno</option>
+        <option value="Bruno">Bruno</option>
+        <option value="Sophie">Sophie</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Résultat</label>
+      <select class="input" id="tentative-salle-resultat">
+        <option value="reussi">✅ Réussi (enchaîné)</option>
+        <option value="avue">⚡ À vue (1er essai)</option>
+        <option value="travail">🔨 Travail (en cours)</option>
+        <option value="echec">❌ Échec (tombé)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Nombre d'essais</label>
+      <input class="input" type="number" id="tentative-salle-essais" value="1" min="1">
+    </div>
+    <div class="form-group">
+      <label>Nombre de secs (optionnel)</label>
+      <input class="input" type="number" id="tentative-salle-secs" value="0" min="0">
+    </div>
+    <div class="form-group">
+  <label>Nombre de secs (optionnel)</label>
+  <input class="input" type="number" id="tentative-secs" value="0" min="0">
+</div>
+    <div class="form-group">
+      <label>Nombre de dégaines (optionnel)</label>
+      <input class="input" type="number" id="tentative-salle-degaines" value="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>Note (1-3 étoiles)</label>
+      <div class="stars" id="tentative-salle-stars"></div>
+      <input type="hidden" id="tentative-salle-rating" value="0">
+    </div>
+    <div class="form-group">
+      <label>Commentaires</label>
+      <textarea class="input" id="tentative-salle-notes" placeholder="Conditions, mouvements réussis, points de progression..."></textarea>
+    </div>
+    <button class="btn btn-add btn-success" id="save-tentative-salle-btn">💾 Enregistrer</button>
+    <button class="btn delete-btn hidden" id="delete-tentative-salle-btn">🗑 Supprimer cette tentative</button>
+  </div>
+</div>
 
     <!-- FALAISE: LISTE DES LIEUX -->
     <div id="lieux-view" class="hidden">
@@ -715,6 +932,9 @@ const db = getDatabase(app);
 let currentUser = null;
 let currentLieu = null;
 let currentVoie = null;
+let currentSalle = null;
+let currentVoieSalle = null;
+let sallesData = {};
 let lieuxData = {};
 
 // Login
@@ -747,6 +967,7 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("app").classList.remove("hidden");
     document.getElementById("user-info").textContent = user.email;
     loadLieux();
+    loadSalles();
   } else {
     document.getElementById("login-screen").classList.remove("hidden");
     document.getElementById("app").classList.add("hidden");
@@ -769,8 +990,443 @@ document.getElementById("falaise-nav").addEventListener('click', () => {
   renderLieux();
 });
 
+document.getElementById("salle-nav").addEventListener('click', () => {
+  showView("salles-view");
+  renderSalles();
+});
+
+document.getElementById("salles-back").addEventListener('click', () => showView("home-view"));
+
 document.getElementById("board-back").addEventListener('click', () => showView("home-view"));
 document.getElementById("lieux-back").addEventListener('click', () => showView("home-view"));
+
+// ==================== SALLE LOGIC ====================
+
+// Load salles from Firebase
+function loadSalles() {
+  const sallesRef = ref(db, "salles");
+  onValue(sallesRef, (snapshot) => {
+    sallesData = snapshot.val() || {};
+    renderSalles();
+  });
+}
+
+// Render salles list
+function renderSalles() {
+  const list = document.getElementById("salles-list");
+  const salles = Object.values(sallesData);
+  
+  if (salles.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🏢</div><p>Aucune salle enregistrée</p></div>';
+    return;
+  }
+  
+  list.innerHTML = salles.map((salle, i) => {
+    const nbVoies = salle.voies ? Object.keys(salle.voies).length : 0;
+    return `
+      <div class="salle-item" data-id="${salle.id}" style="animation-delay:${i*0.05}s">
+        <h3>${salle.nom}</h3>
+        ${salle.ville ? `<div class="salle-stats">📍 ${salle.ville}</div>` : ''}
+        <div class="salle-stats">🧗 ${nbVoies} voie${nbVoies > 1 ? 's' : ''}</div>
+        <div class="item-actions">
+          <button class="btn-small btn-primary edit-salle-btn" data-id="${salle.id}">✏️ Modifier</button>
+          <button class="btn-small btn-secondary view-voies-salle-btn" data-id="${salle.id}">👁️ Voir les voies</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.querySelectorAll('.view-voies-salle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      currentSalle = sallesData[id];
+      showVoiesSalle();
+    });
+  });
+  
+  document.querySelectorAll('.edit-salle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editSalle(btn.dataset.id);
+    });
+  });
+}
+
+// Add salle
+document.getElementById("add-salle-btn").addEventListener('click', () => {
+  document.getElementById("salle-form-title").textContent = "Nouvelle Salle";
+  document.getElementById("salle-edit-id").value = "";
+  document.getElementById("salle-nom").value = "";
+  document.getElementById("salle-ville").value = "";
+  document.getElementById("salle-notes").value = "";
+  document.getElementById("delete-salle-btn").classList.add("hidden");
+  showView("salle-form-view");
+});
+
+// Edit salle
+function editSalle(id) {
+  const salle = sallesData[id];
+  document.getElementById("salle-form-title").textContent = "Modifier la Salle";
+  document.getElementById("salle-edit-id").value = id;
+  document.getElementById("salle-nom").value = salle.nom;
+  document.getElementById("salle-ville").value = salle.ville || "";
+  document.getElementById("salle-notes").value = salle.notes || "";
+  document.getElementById("delete-salle-btn").classList.remove("hidden");
+  showView("salle-form-view");
+}
+
+// Save salle
+document.getElementById("save-salle-btn").addEventListener('click', async () => {
+  const nom = document.getElementById("salle-nom").value.trim();
+  if (!nom) {
+    alert("Le nom de la salle est obligatoire");
+    return;
+  }
+  
+  const id = document.getElementById("salle-edit-id").value || Date.now().toString();
+  const salle = {
+    id: id,
+    nom: nom,
+    ville: document.getElementById("salle-ville").value.trim(),
+    notes: document.getElementById("salle-notes").value.trim(),
+    voies: sallesData[id]?.voies || {}
+  };
+  
+  await set(ref(db, "salles/" + id), salle);
+  showView("salles-view");
+});
+
+// Delete salle
+document.getElementById("delete-salle-btn").addEventListener('click', async () => {
+  if (confirm("Supprimer cette salle et toutes ses voies ?")) {
+    const id = document.getElementById("salle-edit-id").value;
+    await remove(ref(db, "salles/" + id));
+    showView("salles-view");
+  }
+});
+
+document.getElementById("salle-form-back").addEventListener('click', () => showView("salles-view"));
+
+// Show voies salle
+function showVoiesSalle() {
+  document.getElementById("voies-salle-title").textContent = `🏢 ${currentSalle.nom}`;
+  renderVoiesSalle();
+  showView("voies-salle-view");
+}
+
+// Render voies salle
+function renderVoiesSalle() {
+  const list = document.getElementById("voies-salle-list");
+  const voies = currentSalle.voies ? Object.values(currentSalle.voies) : [];
+  
+  if (voies.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🪢</div><p>Aucune voie enregistrée</p></div>';
+    return;
+  }
+  
+  list.innerHTML = voies.map((voie, i) => {
+    const statut = getVoieStatut(voie);
+    const nbTentatives = voie.tentatives ? Object.keys(voie.tentatives).length : 0;
+    const colorEmoji = getColorEmoji(voie.couleur);
+    return `
+      <div class="voie-item" data-id="${voie.id}" style="animation-delay:${i*0.05}s">
+        <h4>${colorEmoji} ${voie.couleur} <span class="badge badge-${statut.class}">${statut.label}</span></h4>
+        <div class="voie-details">${voie.cotation} • ${voie.type}</div>
+        <div class="voie-details">📊 ${nbTentatives} tentative${nbTentatives > 1 ? 's' : ''}</div>
+        <div class="item-actions">
+          <button class="btn-small btn-primary edit-voie-salle-btn" data-id="${voie.id}">✏️ Modifier</button>
+          <button class="btn-small btn-secondary view-detail-salle-btn" data-id="${voie.id}">📊 Détails</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.querySelectorAll('.edit-voie-salle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editVoieSalle(btn.dataset.id);
+    });
+  });
+  
+  document.querySelectorAll('.view-detail-salle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const voie = currentSalle.voies[btn.dataset.id];
+      currentVoieSalle = voie;
+      showVoieSalleDetail();
+    });
+  });
+}
+
+function getColorEmoji(couleur) {
+  const emojis = {
+    'Rouge': '🔴',
+    'Bleu': '🔵',
+    'Vert': '🟢',
+    'Jaune': '🟡',
+    'Orange': '🟠',
+    'Violet': '🟣',
+    'Noir': '⚫',
+    'Blanc': '⚪',
+    'Rose': '🌸',
+    'Gris': '⚪'
+  };
+  return emojis[couleur] || '⚪';
+}
+
+// Add voie salle
+document.getElementById("add-voie-salle-btn").addEventListener('click', () => {
+  document.getElementById("voie-salle-form-title").textContent = "Nouvelle Voie";
+  document.getElementById("voie-salle-edit-id").value = "";
+  document.getElementById("voie-salle-couleur").value = "Rouge";
+  document.getElementById("voie-salle-cotation").value = "6a";
+  document.getElementById("voie-salle-type").value = "dalle";
+  document.getElementById("voie-salle-date-ouverture").value = "";
+  document.getElementById("voie-salle-description").value = "";
+  document.getElementById("delete-voie-salle-btn").classList.add("hidden");
+  document.getElementById("demonter-voie-salle-btn").classList.add("hidden");
+  showView("voie-salle-form-view");
+});
+
+// Edit voie salle
+function editVoieSalle(id) {
+  const voie = currentSalle.voies[id];
+  document.getElementById("voie-salle-form-title").textContent = "Modifier la Voie";
+  document.getElementById("voie-salle-edit-id").value = id;
+  document.getElementById("voie-salle-couleur").value = voie.couleur;
+  document.getElementById("voie-salle-cotation").value = voie.cotation;
+  document.getElementById("voie-salle-type").value = voie.type;
+  document.getElementById("voie-salle-date-ouverture").value = voie.dateOuverture || "";
+  document.getElementById("voie-salle-description").value = voie.description || "";
+  document.getElementById("delete-voie-salle-btn").classList.remove("hidden");
+  
+  if (voie.statut !== 'demontee') {
+    document.getElementById("demonter-voie-salle-btn").classList.remove("hidden");
+  } else {
+    document.getElementById("demonter-voie-salle-btn").classList.add("hidden");
+  }
+  
+  showView("voie-salle-form-view");
+}
+
+// Save voie salle
+document.getElementById("save-voie-salle-btn").addEventListener('click', async () => {
+  const id = document.getElementById("voie-salle-edit-id").value || Date.now().toString();
+  const existingVoie = currentSalle.voies?.[id] || {};
+  
+  const voie = {
+    id: id,
+    couleur: document.getElementById("voie-salle-couleur").value,
+    cotation: document.getElementById("voie-salle-cotation").value,
+    type: document.getElementById("voie-salle-type").value,
+    dateOuverture: document.getElementById("voie-salle-date-ouverture").value,
+    description: document.getElementById("voie-salle-description").value.trim(),
+    statut: existingVoie.statut || 'a-essayer',
+    tentatives: existingVoie.tentatives || {}
+  };
+  
+  if (!currentSalle.voies) currentSalle.voies = {};
+  currentSalle.voies[id] = voie;
+  
+  await set(ref(db, "salles/" + currentSalle.id), currentSalle);
+  showVoiesSalle();
+});
+
+// Marquer comme démontée
+document.getElementById("demonter-voie-salle-btn").addEventListener('click', async () => {
+  if (confirm("Marquer cette voie comme démontée ?")) {
+    const id = document.getElementById("voie-salle-edit-id").value;
+    currentSalle.voies[id].statut = 'demontee';
+    await set(ref(db, "salles/" + currentSalle.id), currentSalle);
+    showVoiesSalle();
+  }
+});
+
+// Delete voie salle
+document.getElementById("delete-voie-salle-btn").addEventListener('click', async () => {
+  if (confirm("Supprimer cette voie et toutes ses tentatives ?")) {
+    const id = document.getElementById("voie-salle-edit-id").value;
+    delete currentSalle.voies[id];
+    await set(ref(db, "salles/" + currentSalle.id), currentSalle);
+    showVoiesSalle();
+  }
+});
+
+document.getElementById("voie-salle-form-back").addEventListener('click', () => showVoiesSalle());
+document.getElementById("voies-salle-back").addEventListener('click', () => showView("salles-view"));
+
+// Show voie salle detail
+function showVoieSalleDetail() {
+  const statut = getVoieStatut(currentVoieSalle);
+  const colorEmoji = getColorEmoji(currentVoieSalle.couleur);
+  document.getElementById("voie-salle-detail-title").innerHTML = `${colorEmoji} ${currentVoieSalle.couleur} <span class="badge badge-${statut.class}">${statut.label}</span>`;
+  
+  const info = `
+    <div style="background:var(--bg-tertiary);padding:16px;border-radius:12px;margin-bottom:20px">
+      <div style="margin-bottom:8px"><strong>Cotation:</strong> ${currentVoieSalle.cotation}</div>
+      <div style="margin-bottom:8px"><strong>Type:</strong> ${currentVoieSalle.type}</div>
+      ${currentVoieSalle.dateOuverture ? `<div style="margin-bottom:8px"><strong>Ouverte le:</strong> ${new Date(currentVoieSalle.dateOuverture).toLocaleDateString('fr-FR')}</div>` : ''}
+      ${currentVoieSalle.description ? `<div style="margin-top:12px;color:var(--text-secondary)">${currentVoieSalle.description}</div>` : ''}
+    </div>
+  `;
+  document.getElementById("voie-salle-detail-info").innerHTML = info;
+  
+  renderTentativesSalle();
+  showView("voie-salle-detail-view");
+}
+
+// Render tentatives salle
+function renderTentativesSalle() {
+  const list = document.getElementById("tentatives-salle-list");
+  const tentatives = currentVoieSalle.tentatives ? Object.values(currentVoieSalle.tentatives).sort((a,b) => new Date(b.date) - new Date(a.date)) : [];
+  
+  if (tentatives.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>Aucune tentative enregistrée</p></div>';
+    return;
+  }
+  
+  list.innerHTML = tentatives.map((t, i) => {
+    const stars = '⭐'.repeat(t.rating);
+    const details = [];
+    details.push(`${t.user}`);
+    details.push(`${t.essais} essai${t.essais > 1 ? 's' : ''}`);
+    if (t.secs > 0) details.push(`${t.secs} sec${t.secs > 1 ? 's' : ''}`);
+    if (t.degaines > 0) details.push(`${t.degaines} dégaine${t.degaines > 1 ? 's' : ''}`);
+    
+    return `
+      <div class="tentative-item" data-id="${t.id}" style="animation-delay:${i*0.05}s">
+        <h4>${new Date(t.date).toLocaleDateString('fr-FR')} <span class="badge badge-${t.resultat}">${getResultatLabel(t.resultat)}</span></h4>
+        <div class="tentative-details">${details.join(' • ')}</div>
+        ${t.rating > 0 ? `<div class="tentative-details">${stars}</div>` : ''}
+        ${t.notes ? `<div style="margin-top:8px;color:var(--text-secondary);font-size:0.9rem">${t.notes}</div>` : ''}
+        <div class="item-actions">
+          <button class="btn-small btn-primary edit-tentative-salle-btn" data-id="${t.id}">✏️ Modifier</button>
+          <button class="btn-small btn-danger delete-tentative-salle-btn" data-id="${t.id}">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.querySelectorAll('.edit-tentative-salle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editTentativeSalle(btn.dataset.id);
+    });
+  });
+  
+  document.querySelectorAll('.delete-tentative-salle-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (confirm("Supprimer cette tentative ?")) {
+        delete currentVoieSalle.tentatives[btn.dataset.id];
+        await updateVoieSalle();
+        renderTentativesSalle();
+      }
+    });
+  });
+}
+
+// Add tentative salle
+document.getElementById("add-tentative-salle-btn").addEventListener('click', () => {
+  document.getElementById("tentative-salle-form-title").textContent = "Nouvelle Tentative";
+  document.getElementById("tentative-salle-edit-id").value = "";
+  document.getElementById("tentative-salle-date").value = new Date().toISOString().split('T')[0];
+  document.getElementById("tentative-salle-user").value = "Sophie&Bruno";
+  document.getElementById("tentative-salle-resultat").value = "travail";
+  document.getElementById("tentative-salle-essais").value = "1";
+  document.getElementById("tentative-salle-secs").value = "0";
+  document.getElementById("tentative-salle-degaines").value = "0";
+  document.getElementById("tentative-salle-rating").value = "0";
+  document.getElementById("tentative-salle-notes").value = "";
+  updateStarDisplaySalle(0);
+  document.getElementById("delete-tentative-salle-btn").classList.add("hidden");
+  showView("tentative-salle-form-view");
+});
+
+// Edit tentative salle
+function editTentativeSalle(id) {
+  const t = currentVoieSalle.tentatives[id];
+  document.getElementById("tentative-salle-form-title").textContent = "Modifier la Tentative";
+  document.getElementById("tentative-salle-edit-id").value = id;
+  document.getElementById("tentative-salle-date").value = t.date;
+  document.getElementById("tentative-salle-user").value = t.user;
+  document.getElementById("tentative-salle-resultat").value = t.resultat;
+  document.getElementById("tentative-salle-essais").value = t.essais;
+  document.getElementById("tentative-salle-secs").value = t.secs || 0;
+  document.getElementById("tentative-salle-degaines").value = t.degaines || 0;
+  document.getElementById("tentative-salle-rating").value = t.rating;
+  document.getElementById("tentative-salle-notes").value = t.notes || "";
+  updateStarDisplaySalle(t.rating);
+  document.getElementById("delete-tentative-salle-btn").classList.remove("hidden");
+  showView("tentative-salle-form-view");
+}
+
+// Stars for salle
+function updateStarDisplaySalle(rating) {
+  const container = document.getElementById("tentative-salle-stars");
+  container.innerHTML = '';
+  for (let i = 1; i <= 3; i++) {
+    const star = document.createElement('span');
+    star.className = i <= rating ? 'star filled' : 'star empty';
+    star.textContent = '⭐';
+    star.addEventListener('click', () => {
+      document.getElementById("tentative-salle-rating").value = i;
+      updateStarDisplaySalle(i);
+    });
+    container.appendChild(star);
+  }
+}
+
+updateStarDisplaySalle(0);
+
+// Save tentative salle
+document.getElementById("save-tentative-salle-btn").addEventListener('click', async () => {
+  const rating = parseInt(document.getElementById("tentative-salle-rating").value);
+  if (rating === 0) {
+    alert("Merci de donner une note (1-3 étoiles)");
+    return;
+  }
+  
+  const id = document.getElementById("tentative-salle-edit-id").value || Date.now().toString();
+  
+  const tentative = {
+    id: id,
+    date: document.getElementById("tentative-salle-date").value,
+    user: document.getElementById("tentative-salle-user").value,
+    resultat: document.getElementById("tentative-salle-resultat").value,
+    essais: parseInt(document.getElementById("tentative-salle-essais").value),
+    secs: parseInt(document.getElementById("tentative-salle-secs").value) || 0,
+    degaines: parseInt(document.getElementById("tentative-salle-degaines").value) || 0,
+    rating: rating,
+    notes: document.getElementById("tentative-salle-notes").value.trim()
+  };
+  
+  if (!currentVoieSalle.tentatives) currentVoieSalle.tentatives = {};
+  currentVoieSalle.tentatives[id] = tentative;
+  
+  await updateVoieSalle();
+  showVoieSalleDetail();
+});
+
+// Delete tentative salle
+document.getElementById("delete-tentative-salle-btn").addEventListener('click', async () => {
+  if (confirm("Supprimer cette tentative ?")) {
+    const id = document.getElementById("tentative-salle-edit-id").value;
+    delete currentVoieSalle.tentatives[id];
+    await updateVoieSalle();
+    showVoieSalleDetail();
+  }
+});
+
+// Update voie salle in Firebase
+async function updateVoieSalle() {
+  currentSalle.voies[currentVoieSalle.id] = currentVoieSalle;
+  await set(ref(db, "salles/" + currentSalle.id), currentSalle);
+}
+
+document.getElementById("tentative-salle-form-back").addEventListener('click', () => showVoieSalleDetail());
+document.getElementById("voie-salle-detail-back").addEventListener('click', () => showVoiesSalle());
 
 // Load lieux from Firebase
 function loadLieux() {
@@ -935,6 +1591,9 @@ function getVoieStatut(voie) {
   if (voie.statut === 'abandonnee') {
     return {label: 'Abandonnée', class: 'abandonnee'};
   }
+  if (voie.statut === 'demontee') {
+    return {label: 'Démontée', class: 'demontee'};
+  }
   
   const tentatives = voie.tentatives ? Object.values(voie.tentatives) : [];
   if (tentatives.length === 0) {
@@ -1043,9 +1702,12 @@ function showVoieDetail() {
 
 // Render tentatives
 function renderTentatives() {
-  const list = document.getElementById("tentatives-list");
-  const tentatives = currentVoie.tentatives ? Object.values(currentVoie.tentatives).sort((a,b) => new Date(b.date) - new Date(a.date)) : [];
-  
+const details = [];
+details.push(`${t.user}`);
+details.push(`${t.essais} essai${t.essais > 1 ? 's' : ''}`);
+if (t.secs > 0) details.push(`${t.secs} sec${t.secs > 1 ? 's' : ''}`);
+if (t.degaines > 0) details.push(`${t.degaines} dégaine${t.degaines > 1 ? 's' : ''}`);
+
   if (tentatives.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>Aucune tentative enregistrée</p></div>';
     return;
@@ -1125,6 +1787,7 @@ function editTentative(id) {
   document.getElementById("tentative-degaines").value = t.degaines;
   document.getElementById("tentative-rating").value = t.rating;
   document.getElementById("tentative-notes").value = t.notes || "";
+  document.getElementById("tentative-secs").value = t.secs || 0;
   updateStarDisplay(t.rating);
   document.getElementById("delete-tentative-btn").classList.remove("hidden");
   showView("tentative-form-view");
@@ -1166,6 +1829,7 @@ document.getElementById("save-tentative-btn").addEventListener('click', async ()
     essais: parseInt(document.getElementById("tentative-essais").value),
     degaines: parseInt(document.getElementById("tentative-degaines").value),
     rating: rating,
+    secs: parseInt(document.getElementById("tentative-secs").value) || 0,
     notes: document.getElementById("tentative-notes").value.trim()
   };
   
@@ -1197,22 +1861,33 @@ document.getElementById("voie-detail-back").addEventListener('click', () => show
 
 // Update stats
 function updateStats() {
-  const lieux = Object.values(lieuxData);
-  let totalVoies = 0;
-  let totalEnchaines = 0;
-  let totalProjets = 0;
+  // Stats Salle
+  const salles = Object.values(sallesData);
+  let totalVoiesSalle = 0;
+  let totalEnchinesSalle = 0;
+  let totalProjetsSalle = 0;
   
-  lieux.forEach(lieu => {
-    if (lieu.voies) {
-      const voies = Object.values(lieu.voies);
-      totalVoies += voies.length;
+  salles.forEach(salle => {
+    if (salle.voies) {
+      const voies = Object.values(salle.voies);
+      totalVoiesSalle += voies.length;
       voies.forEach(voie => {
         const statut = getVoieStatut(voie);
-        if (statut.class === 'enchainee') totalEnchaines++;
-        if (statut.class === 'projet') totalProjets++;
+        if (statut.class === 'enchainee') totalEnchinesSalle++;
+        if (statut.class === 'projet') totalProjetsSalle++;
       });
     }
   });
+  
+  document.getElementById("stat-salles").textContent = salles.length;
+  document.getElementById("stat-voies-salle").textContent = totalVoiesSalle;
+  document.getElementById("stat-enchaines-salle").textContent = totalEnchinesSalle;
+  document.getElementById("stat-projets-salle").textContent = totalProjetsSalle;
+  
+  // Stats Falaise (le code existant reste)
+  const lieux = Object.values(lieuxData);
+  // ... reste du code existant
+}
   
   document.getElementById("stat-lieux").textContent = lieux.length;
   document.getElementById("stat-voies").textContent = totalVoies;
